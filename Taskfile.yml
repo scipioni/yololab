@@ -1,0 +1,33 @@
+# https://taskfile.dev
+
+version: '3'
+
+vars:
+  GREETING: Hello, World!
+
+tasks:
+  default:
+    cmds:
+      - go-task -l
+    silent: true
+
+  setup:
+    cmds:
+      - python3 -mvenv .venv
+      - .venv/bin/pip install -U pip ultralytics
+      - task: download
+    status:
+      - test -f .venv/bin/yolo
+
+  download:
+    cmds:
+      - |
+        cd datasets
+        wget -O tmp.zip https://www.dropbox.com/s/qvglw8pqo16769f/pothole_dataset_v8.zip?dl=1 && unzip tmp.zip && rm tmp.zip
+    status:
+      - test -f datasets/pothole_dataset_v8/pothole.yaml
+
+  train:
+    cmds:
+      - yolo train data=coco8.yaml model=models/yolov8n.pt epochs=1 lr0=0.01
+  

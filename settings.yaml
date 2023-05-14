@@ -1,0 +1,7 @@
+datasets_dir: /lab/yololab-github/datasets
+weights_dir: /lab/yololab-github/weights
+runs_dir: /lab/yololab-github/runs
+uuid: 5537d393ad7597e11cf17b2ea7109f7e14dff2abc02bd2322da234098dd57783
+sync: true
+api_key: ''
+settings_version: 0.0.3
