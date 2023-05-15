@@ -14,7 +14,7 @@ tasks:
   setup:
     cmds:
       - python3 -mvenv .venv
-      - .venv/bin/pip install -U pip ultralytics
+      - .venv/bin/pip install -e yololab
       - task: download
     status:
       - test -f .venv/bin/yolo
@@ -22,6 +22,7 @@ tasks:
   download:
     cmds:
       - |
+        mkdir -p datasets
         cd datasets
         wget -O tmp.zip https://www.dropbox.com/s/qvglw8pqo16769f/pothole_dataset_v8.zip?dl=1 && unzip tmp.zip && rm tmp.zip
     status:

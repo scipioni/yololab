@@ -1,0 +1,24 @@
+[tool.pdm]
+
+[project]
+name = "yololab"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "Stefano Scipioni", email = "stefano.scipioni@csgalileo.net"},
+]
+dependencies = [
+    "configargparse>=1.5.3",
+    "ultralytics>=8.0.101",
+]
+requires-python = ">=3.10"
+readme = "README.md"
+license = {text = "MIT"}
+
+[build-system]
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"
+
+
+[project.scripts]
+grabber = "yololab.main:main"
