@@ -2,19 +2,47 @@ import logging
 import cv2 as cv
 import asyncio
 
+import configargparse
+
 from .timing import timing
 
 from .grabber import DummyGrabber, FileGrabber, WebcamGrabber
+
+from ultralytics import YOLO
+
+
 
 log = logging.getLogger(__name__)
 
 
 
-
-
 async def inference(frame):
-    pass
-    return []
+
+    # load model
+    # if config.nano:
+        model = YOLO('yolov8n.pt')
+
+    # if config.custom:
+    #     model = YOLO('path/to/desired_model.pt')
+
+
+    # predict current frame with the model 
+    # if config.inference:
+        # load frame
+        # im2 = cv.imread(frame)
+        
+        # if success:
+            # Run selected model inference on the frame
+        results = model.predict(source=frame, save=False, save_txt=False)
+
+        # Plot the results on the frame
+        annotated_frame = results[0].plot()
+
+        # Display the annotated frame
+        cv.imshow(" chosen_model + results", annotated_frame)
+
+
+        return []
 
 
 async def show_results(results, frame):
