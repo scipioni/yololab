@@ -340,6 +340,15 @@ requires_python = ">=3.7"
 summary = "Easily download, build, install, upgrade, and uninstall Python packages"
 
 [[package]]
+name = "shared-ndarray2"
+version = "1.0.0.post0"
+requires_python = ">=3.8,<4.0"
+summary = "Interface for NumPy ndarray using multiprocessing SharedMemory"
+dependencies = [
+    "numpy<2.0.0,>=1.21.1",
+]
+
+[[package]]
 name = "six"
 version = "1.16.0"
 requires_python = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*"
@@ -468,7 +477,7 @@ summary = "A built-package format for Python"
 [metadata]
 lock_version = "4.2"
 groups = ["default"]
-content_hash = "sha256:2dfec701fdbc38dbe65e79ca48896bd9e910edc0d7ca940fc6263eb6e7653ce1"
+content_hash = "sha256:93139b4d780e7174aac251387833c7f4dd13b16d7fa169a3930ea64001a20c79"
 
 [metadata.files]
 "certifi 2023.5.7" = [
@@ -1123,6 +1132,10 @@ content_hash = "sha256:2dfec701fdbc38dbe65e79ca48896bd9e910edc0d7ca940fc6263eb6e
 "setuptools 67.7.2" = [
     {url = "https://files.pythonhosted.org/packages/2f/8c/f336a966d4097c7cef6fc699b2ecb83b5fb63fd698198c1b5c7905a74f0f/setuptools-67.7.2-py3-none-any.whl", hash = "sha256:23aaf86b85ca52ceb801d32703f12d77517b2556af839621c641fca11287952b"},
     {url = "https://files.pythonhosted.org/packages/fd/53/e5d7ae40d03e4ed20b7cba317cf9c0c97097c8debb39f9d72d182a6578a2/setuptools-67.7.2.tar.gz", hash = "sha256:f104fa03692a2602fa0fec6c6a9e63b6c8a968de13e17c026957dd1f53d80990"},
+]
+"shared-ndarray2 1.0.0.post0" = [
+    {url = "https://files.pythonhosted.org/packages/2d/37/0380792dbf5e0cad6f5eb84dc17500228cccf3c4b2b8cd64ed53dac17f6c/shared-ndarray2-1.0.0.post0.tar.gz", hash = "sha256:590a494cf6a75db290385590e1f6e77e82168506d90bb3ed70aed8d7d39a48e4"},
+    {url = "https://files.pythonhosted.org/packages/5e/f2/a1eb3a2c690780ae42419d8f7f805c3cd2883e74e91011c375e581e57568/shared_ndarray2-1.0.0.post0-py3-none-any.whl", hash = "sha256:b3514f265485e7075c88d8cd5dbe859030e99023fce01c438bdbf8b5df2be9fe"},
 ]
 "six 1.16.0" = [
     {url = "https://files.pythonhosted.org/packages/71/39/171f1c67cd00715f190ba0b100d606d440a28c93c7714febeca8b79af85e/six-1.16.0.tar.gz", hash = "sha256:1e61c37477a1626458e36f7b1d82aa5c9b094fa4802892072e49de9c60c4c926"},
