@@ -1,3 +1,38 @@
+""".git/{
+    'names': ['person'],
+    'boxes': tensor([[x1, y1, x2, y2, conf, cls_idx]]),
+    'keypoints': tensor([[x1_kpt_0, y1_kpt_0, score_0], ... [x1_kpt_n, y1_kpt_n, score_n]])
+}
+
+Here, the 'boxes' field contains the bounding box coordinates and the confidence score (conf) 
+and class index (cls_idx) of the detected object. 
+The 'keypoints' field contains the x and y coordinates of the detected keypoints (e.g. left shoulder, right shoulder, etc.) 
+and their associated confidence scores. Depending on the specific model architecture used, 
+the positions of the keypoints and the order in which they are listed in 'keypoints' may vary.
+
+To extract the location of a specific keypoint (e.g. left shoulder) from the results list, 
+you can iterate through the list and check the names of the objects detected in each frame 
+(which can be accessed using the 'names' field). Once you have located the object of interest (e.g. a person), 
+you can extract the coordinates of the desired keypoint from the 'keypoints' field using indexing. 
+However, since the position and ordering of the keypoints may change depending on the specific model architecture used, 
+there is no built-in way to get a specific keypoint (like the left shoulder) via a function call.
+
+
+from ultralytics.yolo.engine.results import Results
+from ultralytics.yolo.utils.plotting import Annotator
+results: Results = model.predict(frame)[0]
+
+keypoints = results.keypoints.squeeze().tolist()
+ann = Annotator(frame)
+for i, kp in enumerate(keypoints):
+    x = int(kp[0])
+    y = int(kp[1])
+    ann.text((x, y), str(i))
+"""
+
+
+
+
 import logging
 import cv2 as cv
 import asyncio
