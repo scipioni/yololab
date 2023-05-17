@@ -24,9 +24,13 @@ def get_config() -> Any:
     parser.add_argument("--show", action="store_true", default=False)
     parser.add_argument("--dummy", action="store_true", default=False)
     parser.add_argument("--step", action="store_true", default=False)
-    parser.add_argument("--inference", action="store_true", default=False)
-    parser.add_argument("--nano", action="store_true", default=True)
-    parser.add_argument("--custom", action="store_true", default=False)
+
+    parser.add_argument("--models", default="./models", help="models repo")
+    parser.add_argument("--model", default="yolov8n-pose", help="model name")
+
+    # parser.add_argument("--inference", action="store_true", default=False)
+    # parser.add_argument("--nano", action="store_true", default=True)
+    # parser.add_argument("--custom", action="store_true", default=False)
 
 
     # parser.add_argument("--quiet", action="store_true", default=False)

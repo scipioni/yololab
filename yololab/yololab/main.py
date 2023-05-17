@@ -1,6 +1,7 @@
 import logging
 import cv2 as cv
 import asyncio
+import os
 
 import pandas
 import numpy
@@ -24,30 +25,53 @@ def jls_extract_def():
     return 
 
 
-async def inference(frame):
+class Net:
+    def __init__(self, config):
+        self.config = config
 
-    # load model
-    # if config.nanodetect:
-    # if config.nanopose:
-    # if config.tinypose:
-    # ecc.
-        model = YOLO('yolov8n-pose.pt')
+        self.model = YOLO(os.path.join(config.models, f"{config.model}.pt"))
 
-    # if config.custom:
-    #     model = YOLO('path/to/desired_model.pt')
+    def predict(self, frame):
+        self.frame = frame
+        self.results = self.model.predict(source=frame, save=False, save_txt=False)
+        # keypoints_data = results[0].keypoints.cpu().numpy()
+    
+    def show(self):
+        annotated_frame = self.results[0].plot()
+
+        cv.imshow(self.config.model, annotated_frame)
+        # # Display the annotated frame
+        # cv.imshow(" chosen_model + results", annotated_frame)
 
 
-    # predict current frame with the model 
-    # if config.inference:
-        # load frame
-        # im2 = cv.imread(frame)
+class NetPose(Net):
+    pass
+
+
+# async def inference(frame):
+
+#     # load model
+#     # if config.nanodetect:
+#     # if config.nanopose:
+#     # if config.tinypose:
+#     # ecc.
+#         model = YOLO('yolov8n-pose.pt')
+
+#     # if config.custom:
+#     #     model = YOLO('path/to/desired_model.pt')
+
+
+#     # predict current frame with the model 
+#     # if config.inference:
+#         # load frame
+#         # im2 = cv.imread(frame)
         
-        # if success:
-            # Run selected model inference on the frame
-        results = model.predict(source=frame, save=False, save_txt=False)
-        # results_data = results()
-        keypoints_data = results[0].keypoints.cpu().numpy()
-        log.debug(keypoints_data)
+#         # if success:
+#             # Run selected model inference on the frame
+#         results = model.predict(source=frame, save=False, save_txt=False)
+#         # results_data = results()
+#         keypoints_data = results[0].keypoints.cpu().numpy()
+#         log.debug(keypoints_data)
 
 
 
@@ -82,13 +106,13 @@ async def inference(frame):
 
 
         # Plot the results on the frame
-        annotated_frame = results[0].plot()
+        # annotated_frame = results[0].plot()
 
-        # Display the annotated frame
-        cv.imshow(" chosen_model + results", annotated_frame)
+        # # Display the annotated frame
+        # cv.imshow(" chosen_model + results", annotated_frame)
 
 
-        return []
+        # return []
 
 
 # #getting pose keypoints:
@@ -108,13 +132,13 @@ async def inference(frame):
 # }
 
 
-async def show_results(results, frame):
-    if len(frame.shape) < 3:  # immagine grey
-        frame_show = cv.cvtColor(frame, cv.COLOR_GRAY2RGB)
-    else:
-        frame_show = frame.copy()
+# async def show_results(results, frame):
+#     if len(frame.shape) < 3:  # immagine grey
+#         frame_show = cv.cvtColor(frame, cv.COLOR_GRAY2RGB)
+#     else:
+#         frame_show = frame.copy()
     
-    return frame_show
+#     return frame_show
 
 
 
@@ -127,7 +151,7 @@ async def grab(config):
         grabber = WebcamGrabber(config)
     #grabber.grey = net.channels == 1
 
-    
+    net = Net(config)
     
     i = 1
     while True:
@@ -144,11 +168,15 @@ async def grab(config):
         h, w = frame.shape[:2]
 
 
-        results = await inference(frame)
+        #results = await inference(frame)
+
+        net.predict(frame)
 
         if config.show:
-            frame_show = await show_results(results, frame)
-            cv.imshow("image", frame_show)
+            #frame_show = await show_results(results, frame)
+            #cv.imshow("image", frame_show)
+            net.show()
+
 
         if grabber.key == "w":
             pass
