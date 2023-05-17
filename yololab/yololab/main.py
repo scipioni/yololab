@@ -14,7 +14,7 @@ from .grabber import DummyGrabber, FileGrabber, WebcamGrabber
 
 from ultralytics import YOLO
 
-
+from ultralytics.yolo.utils.plotting import Annotator
 
 log = logging.getLogger(__name__)
 
@@ -34,8 +34,20 @@ class Net:
     def predict(self, frame):
         self.frame = frame
         self.results = self.model.predict(source=frame, save=False, save_txt=False)
-        # keypoints_data = results[0].keypoints.cpu().numpy()
-    
+        keypoints_data = self.results[0].keypoints.cpu().detach().numpy()
+
+
+        keypoints_result = self.results[0].keypoints.squeeze().tolist()
+        ann = Annotator(frame)
+        for i, kp in enumerate(keypoints_result):
+            x = int(kp[0])
+            y = int(kp[1])
+            ann.text((x, y), str(i), txt_color=(0, 0, 255))
+
+        # log.info(keypoints_data)
+        log.info(keypoints_result)
+
+
     def show(self):
         annotated_frame = self.results[0].plot()
 
@@ -73,27 +85,6 @@ class NetPose(Net):
 #         keypoints_data = results[0].keypoints.cpu().numpy()
 #         log.debug(keypoints_data)
 
-
-
-# 0: 640x512 1 person, 30.6ms
-# Speed: 1.7ms preprocess, 30.6ms inference, 4.5ms postprocess per image at shape (1, 3, 640, 640)
-# 2023-05-17 10:10:26,789 [INFO] yololab.main tensor([[[2.5525e+02, 2.4555e+02, 9.9452e-01],
-#          [2.6997e+02, 2.2429e+02, 9.8994e-01],
-#          [2.3725e+02, 2.3267e+02, 9.6483e-01],
-#          [3.0796e+02, 2.2982e+02, 9.3911e-01],
-#          [2.2942e+02, 2.5026e+02, 5.4499e-01],
-#          [3.6097e+02, 3.2694e+02, 9.9497e-01],
-#          [2.2534e+02, 3.5869e+02, 9.9249e-01],
-#          [3.9520e+02, 4.7004e+02, 9.5639e-01],
-#          [2.1457e+02, 5.0807e+02, 9.3612e-01],
-#          [4.3145e+02, 5.6790e+02, 8.8335e-01],
-#          [2.3889e+02, 4.4709e+02, 8.7891e-01],
-#          [3.4676e+02, 5.7993e+02, 8.9241e-01],
-#          [2.5619e+02, 5.8888e+02, 8.8156e-01],
-#          [3.3986e+02, 6.4000e+02, 5.9961e-02],
-#          [2.4307e+02, 6.4000e+02, 5.8399e-02],
-#          [3.2277e+02, 6.4000e+02, 2.6976e-03],
-#          [2.7015e+02, 6.1640e+02, 2.8066e-03]]], device='cuda:0')
 
 
 
