@@ -1,11 +1,14 @@
+import logging
 import os
 
 import cv2 as cv
+import numpy as np
 from ultralytics import YOLO
 from ultralytics.yolo.utils.plotting import Annotator
 
 from . import utils
 
+log = logging.getLogger(__name__)
 class Net:
     def __init__(self, config):
         self.config = config
@@ -22,15 +25,35 @@ class Net:
         cv.imshow(self.config.model, self.frame if self.frame_dirty is None else self.frame_dirty)
 
 
+class Body:
+    def __init__(self, i):
+        self.xy_neck = [0,0]
+        self.i = i
+    
+    def show(self, frame):
+        utils.draw_point(frame, xy=self.xy_neck, color=(255,255,0), radius=8)
+        if self.isLaying():
+            utils.draw_text(frame, f"laying{self.i}", self.xy_neck, color=(255,0,255))
+        else:
+            utils.draw_text(frame, f"neck{self.i}", self.xy_neck, color=(255,255,0))
+
+    def isLaying(self):
+        return True
+
+
+    def __repr__(self):
+        return f"body i={self.i} neck={self.xy_neck}"
 class NetYoloPose(Net):
     def __init__(self, config):
         super().__init__(config)
 
         self.model = YOLO(os.path.join(config.models, f"{config.model}.pt"))
+        self.bodies = []
 
     def predict(self, frame):
         super().predict(frame)
         self.results = self.model.predict(source=frame, stream=False, verbose=False)
+        self.bodies = self.calculate_bodies()
     
     def draw_boxes(self):
         for result in self.results:
@@ -40,17 +63,50 @@ class NetYoloPose(Net):
                 r = box.xyxy[0].astype(int)                            # get corner points as int
                 cv.rectangle(self.frame_dirty, r[:2], r[2:], (255, 0, 255), 2)   # draw boxes on img
 
+
+    def calculate_bodies(self):
+        bodies = []
+        #for result in self.results:
+
+
+        keypointsm = self.results[0].keypoints.squeeze().tolist()
+        if len(keypointsm) > 16:
+            keypointsm = [keypointsm]
+
+        for keypoints in keypointsm:
+            body = Body(i=len(bodies))
+            try:
+                body.xy_neck = [
+                    int((keypoints[5][0] + keypoints[6][0])/2),
+                    int((keypoints[5][1] + keypoints[6][1])/2),
+                ]
+                bodies.append(body)
+            except Exception as e:
+                log.error(e)
+
+        return bodies
+
+
     def draw_keypoints(self):
-        for result in self.results:
-            keypoints = result.keypoints.squeeze().tolist()
+        keypointsm = self.results[0].keypoints.squeeze().tolist()
+        if len(keypointsm) > 16:
+            keypointsm = [keypointsm]
+
+        for keypoints in keypointsm:
             for i, kp in enumerate(keypoints):
                 try:
                     x = int(kp[0])
                     y = int(kp[1])
                 except:
                     continue
-                utils.draw_point(self.frame_dirty, x=x, y=y)
-                utils.draw_text(self.frame_dirty, str(i), x, y)
+                utils.draw_point(self.frame_dirty, xy=(x,y))
+                utils.draw_text(self.frame_dirty, str(i), (x,y))
+
+
+    def draw_bodies(self):
+        for body in self.bodies:
+            body.show(self.frame_dirty)
+
 
     def show(self):
         self.prepare_show()
@@ -59,6 +115,8 @@ class NetYoloPose(Net):
         else:
             self.draw_boxes()
             self.draw_keypoints()
+            self.draw_bodies()
+            
         super().show()
 
   
@@ -95,4 +153,4 @@ for i, kp in enumerate(keypoints):
     x = int(kp[0])
     y = int(kp[1])
     ann.text((x, y), str(i))
-"""
+""" 
