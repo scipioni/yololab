@@ -97,10 +97,12 @@ class NetYoloPose(Net):
                 try:
                     x = int(kp[0])
                     y = int(kp[1])
+                    confidence = kp[2]
                 except:
                     continue
-                utils.draw_point(self.frame_dirty, xy=(x,y))
-                utils.draw_text(self.frame_dirty, str(i), (x,y))
+                if confidence > self.config.confidence_min:
+                    utils.draw_point(self.frame_dirty, xy=(x,y))
+                    utils.draw_text(self.frame_dirty, str(i), (x,y))
 
 
     def draw_bodies(self):

@@ -29,7 +29,7 @@ def get_config() -> Any:
     parser.add_argument("--model", default="yolov8n-pose", help="model name")
     parser.add_argument("--show-ann", action="store_true", default=False, help="show annotator info")
     parser.add_argument("--url", default="", help="camera url, for example rtsp://10.1.16.107:554/s0")
-
+    parser.add_argument("--confidence-min", type=float, default=0.9)
 
     # parser.add_argument("--inference", action="store_true", default=False)
     # parser.add_argument("--nano", action="store_true", default=True)
