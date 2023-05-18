@@ -148,7 +148,7 @@ class WebcamGrabber(Grabber):
         if not do_continue:
             return (None, "")
         if not self._vid:
-            self._vid = cv.VideoCapture(0)
+            self._vid = cv.VideoCapture(self.config.url or 0)
 
         ret, frame = self._vid.read()
         if not ret:
