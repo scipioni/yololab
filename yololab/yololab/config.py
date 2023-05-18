@@ -27,8 +27,8 @@ def get_config() -> Any:
 
     parser.add_argument("--models", default="./models", help="models repo")
     parser.add_argument("--model", default="yolov8n-pose", help="model name")
-    parser.add_argument("--show-full", action="store_true", default=False, help="show all info")
-
+    parser.add_argument("--show-ann", action="store_true", default=False, help="show annotator info")
+    parser.add_argument("--url", default="", help="camera url, for example rtsp://10.1.16.107:554/s0")
 
 
     # parser.add_argument("--inference", action="store_true", default=False)
@@ -67,7 +67,7 @@ def get_config() -> Any:
     # )
     # parser.add_argument("--camera-color", action="store_true", default=False, help="")
     # parser.add_argument("--camera-native", action="store_true", default=False, help="")
-    # parser.add_argument("--camera-basler", action="store_true", default=True, help="")
+    # parser.add_ar gument("--camera-basler", action="store_true", default=True, help="")
     # parser.add_argument("--camera-loop", action="store_true", default=False)
     # parser.add_argument("--camera-fake", default="", help="simulate camera with image")
     parser.add_argument("--camera-id", nargs="+", default=[0])
