@@ -70,6 +70,16 @@ requires_python = ">=3.5"
 summary = "Decorators for Humans"
 
 [[package]]
+name = "deep-sort-realtime"
+version = "1.3.2"
+summary = "A more realtime adaptation of Deep SORT"
+dependencies = [
+    "numpy",
+    "opencv-python",
+    "scipy",
+]
+
+[[package]]
 name = "executing"
 version = "1.2.0"
 summary = "Get the currently executing AST node of a frame, and other information"
@@ -485,14 +495,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "thop"
-version = "0.1.1.post2209072238"
-summary = "A tool to count the FLOPs of PyTorch model."
-dependencies = [
-    "torch",
-]
-
-[[package]]
 name = "torch"
 version = "2.0.1"
 requires_python = ">=3.8.0"
@@ -569,7 +571,7 @@ summary = "Provider of IANA time zone data"
 
 [[package]]
 name = "ultralytics"
-version = "8.0.101"
+version = "8.0.105"
 requires_python = ">=3.7"
 summary = "Ultralytics YOLOv8 for SOTA object detection, multi-object tracking, instance segmentation, pose estimation and image classification."
 dependencies = [
@@ -583,7 +585,6 @@ dependencies = [
     "scipy>=1.4.1",
     "seaborn>=0.11.0",
     "sentry-sdk",
-    "thop>=0.1.1",
     "torch>=1.7.0",
     "torchvision>=0.8.1",
     "tqdm>=4.64.0",
@@ -609,7 +610,7 @@ summary = "A built-package format for Python"
 [metadata]
 lock_version = "4.2"
 groups = ["default"]
-content_hash = "sha256:7470cf484c293f7a7b37bf98ef8bb4ca006c2a9a34b29320370c2458c86e382a"
+content_hash = "sha256:fbe63e28be482737250370d7bc329d96528c268c5e103526f5483ddebcaabca3"
 
 [metadata.files]
 "appnope 0.1.3" = [
@@ -796,6 +797,10 @@ content_hash = "sha256:7470cf484c293f7a7b37bf98ef8bb4ca006c2a9a34b29320370c2458c
 "decorator 5.1.1" = [
     {url = "https://files.pythonhosted.org/packages/66/0c/8d907af351aa16b42caae42f9d6aa37b900c67308052d10fdce809f8d952/decorator-5.1.1.tar.gz", hash = "sha256:637996211036b6385ef91435e4fae22989472f9d571faba8927ba8253acbc330"},
     {url = "https://files.pythonhosted.org/packages/d5/50/83c593b07763e1161326b3b8c6686f0f4b0f24d5526546bee538c89837d6/decorator-5.1.1-py3-none-any.whl", hash = "sha256:b8c3f85900b9dc423225913c5aace94729fe1fa9763b38939a95226f02d37186"},
+]
+"deep-sort-realtime 1.3.2" = [
+    {url = "https://files.pythonhosted.org/packages/e3/f5/9c91aaaae40e4e7925db191f128c5dd5d3a662df1ca76d6a874925c022af/deep-sort-realtime-1.3.2.tar.gz", hash = "sha256:32bab92f981a274fce3ff121f35894e5adab7ca00314c113c348de7bcb82d73e"},
+    {url = "https://files.pythonhosted.org/packages/eb/3c/73c13af1dddc287cb42493ad59bd296daef106408e0006a4897c20a4ddd6/deep_sort_realtime-1.3.2-py3-none-any.whl", hash = "sha256:a6e144c888fdfb27245d2a060acbe0d2f3088448defbc419f7a26bce063bdd6c"},
 ]
 "executing 1.2.0" = [
     {url = "https://files.pythonhosted.org/packages/28/3c/bc3819dd8b1a1588c9215a87271b6178cc5498acaa83885211f5d4d9e693/executing-1.2.0-py2.py3-none-any.whl", hash = "sha256:0314a69e37426e3608aada02473b4161d4caf5a4b244d1d0c48072b8fee7bacc"},
@@ -1341,9 +1346,6 @@ content_hash = "sha256:7470cf484c293f7a7b37bf98ef8bb4ca006c2a9a34b29320370c2458c
     {url = "https://files.pythonhosted.org/packages/d2/05/e6600db80270777c4a64238a98d442f0fd07cc8915be2a1c16da7f2b9e74/sympy-1.12-py3-none-any.whl", hash = "sha256:c3588cd4295d0c0f603d0f2ae780587e64e2efeedb3521e46b9bb1d08d184fa5"},
     {url = "https://files.pythonhosted.org/packages/e5/57/3485a1a3dff51bfd691962768b14310dae452431754bfc091250be50dd29/sympy-1.12.tar.gz", hash = "sha256:ebf595c8dac3e0fdc4152c51878b498396ec7f30e7a914d6071e674d49420fb8"},
 ]
-"thop 0.1.1.post2209072238" = [
-    {url = "https://files.pythonhosted.org/packages/bb/0f/72beeab4ff5221dc47127c80f8834b4bcd0cb36f6ba91c0b1d04a1233403/thop-0.1.1.post2209072238-py3-none-any.whl", hash = "sha256:01473c225231927d2ad718351f78ebf7cffe6af3bed464c4f1ba1ef0f7cdda27"},
-]
 "torch 2.0.1" = [
     {url = "https://files.pythonhosted.org/packages/1a/32/222e49ed160fa7d0690a938c42428fecb60b4595101d8e88ea523f70e406/torch-2.0.1-cp39-none-macosx_10_9_x86_64.whl", hash = "sha256:c62df99352bd6ee5a5a8d1832452110435d178b5164de450831a3a8cc14dc680"},
     {url = "https://files.pythonhosted.org/packages/21/33/4925decd863ce88ed9190a4bd872b01c146243ee68db08c72923984fe335/torch-2.0.1-cp310-cp310-manylinux2014_aarch64.whl", hash = "sha256:359bfaad94d1cda02ab775dc1cc386d585712329bb47b8741607ef6ef4950747"},
@@ -1424,9 +1426,9 @@ content_hash = "sha256:7470cf484c293f7a7b37bf98ef8bb4ca006c2a9a34b29320370c2458c
     {url = "https://files.pythonhosted.org/packages/70/e5/81f99b9fced59624562ab62a33df639a11b26c582be78864b339dafa420d/tzdata-2023.3.tar.gz", hash = "sha256:11ef1e08e54acb0d4f95bdb1be05da659673de4acbd21bf9c69e94cc5e907a3a"},
     {url = "https://files.pythonhosted.org/packages/d5/fb/a79efcab32b8a1f1ddca7f35109a50e4a80d42ac1c9187ab46522b2407d7/tzdata-2023.3-py2.py3-none-any.whl", hash = "sha256:7e65763eef3120314099b6939b5546db7adce1e7d6f2e179e3df563c70511eda"},
 ]
-"ultralytics 8.0.101" = [
-    {url = "https://files.pythonhosted.org/packages/5a/4d/e032162d20175e2b5f994b0b7a5af60b447874af64da5a3f884225c1f7af/ultralytics-8.0.101-py3-none-any.whl", hash = "sha256:fa11bcfd3b0ab779b6741ad889a55c092ce03c310035acf24b08e7c6d751aead"},
-    {url = "https://files.pythonhosted.org/packages/7c/d5/344c51e49462a2b4e5437d21b386f8cd0fb4f7f3dfd6bdd18bbf6e101339/ultralytics-8.0.101.tar.gz", hash = "sha256:bff11b802daa9af062cd50e14b2774891ecfeca30fae9c73328056e24ff0b8c5"},
+"ultralytics 8.0.105" = [
+    {url = "https://files.pythonhosted.org/packages/3f/22/8e3babff943b254e7745550d694d4e746af2a5242c2cc8d99779b3b83dda/ultralytics-8.0.105-py3-none-any.whl", hash = "sha256:d09d84ef9927c05cd523146293f0fdc9ef976c979a37059cccedd37e73e84a55"},
+    {url = "https://files.pythonhosted.org/packages/ec/8d/a4b8139e2d6629bb5aac73110783c407c2653f5ec95acec5145558534c93/ultralytics-8.0.105.tar.gz", hash = "sha256:5e70e104eca80f40c611592e55793c7d004cff70a7e16132099af1827ab38db5"},
 ]
 "urllib3 1.26.15" = [
     {url = "https://files.pythonhosted.org/packages/21/79/6372d8c0d0641b4072889f3ff84f279b738cd8595b64c8e0496d4e848122/urllib3-1.26.15.tar.gz", hash = "sha256:8a388717b9476f934a21484e8c8e61875ab60644d29b9b39e11e4b9dc1c6b305"},

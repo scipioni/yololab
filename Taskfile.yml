@@ -32,8 +32,19 @@ tasks:
     cmds:
       - yolo train data=coco8.yaml model=models/yolov8n.pt epochs=1 lr0=0.01
   
-
+  export:
+    cmds:
+      - yolo export model=models/yolov8n.pt imgsz=640 format=onnx opset=12
 
   update:
     cmds:
       - pip install -e yololab
+
+
+  test:deepsort:
+    cmds:
+      - python yololab/yololab/experiments/deepsort.py
+    
+  test:onxx:
+    cmds:
+      - python yololab/yololab/experiments/onxx.py --model models/yolov8n.onnx --img samples/dogs.webp
