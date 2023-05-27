@@ -1,0 +1,12 @@
+jupyterlab>=4.0.0
+#jupyterlab-drawio
+#jupyterlab-spreadsheet-editor
+#jupyterlab-topbar
+ipympl
+pandas
+numpy
+scipy
+scikit-learn
+keras
+super-gradients
+pytorch-quantization

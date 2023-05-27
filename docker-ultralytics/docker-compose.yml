@@ -1,0 +1,35 @@
+version: "3"
+services:
+  jupyter:
+    image: yololab/jupyter
+    restart: unless-stopped
+    init: true
+    #command: jupyter lab --notebook-dir=/var/ --preferred-dir /var/www/html/example/ --allow-root --no-browser --ip=0.0.0.0 --NotebookApp.token=xyz
+    command: jupyter lab --allow-root --no-browser --ip=0.0.0.0
+    #user: 1000:1000
+    build:
+      context: .
+    volumes:
+      - /dev/shm:/dev/shm
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      #- ./notebooks:/var/www/html/
+      - ./notebooks:/notebooks
+    ports:
+      - 8888:8888
+    environment:
+      - DISPLAY
+      - QT_X11_NO_MITSHM=1
+      - JUPYTER_ENABLE_LAB=yes
+      - JUPYTER_TOKEN=${JUPYTER_TOKEN}
+    devices:
+      - "/dev/nvidia0:/dev/nvidia0"
+      - "/dev/nvidia-uvm:/dev/nvidia-uvm"
+      - "/dev/nvidia-uvm-tools:/dev/nvidia-uvm-tools"
+      - "/dev/nvidiactl:/dev/nvidiactl"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: [ gpu ]
+
+ 
