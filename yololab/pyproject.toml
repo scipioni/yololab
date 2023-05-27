@@ -1,5 +1,3 @@
-[tool.pdm]
-
 [project]
 name = "yololab"
 version = "0.1.0"
@@ -13,6 +11,7 @@ dependencies = [
     "shared-ndarray2>=1.0.0.post0",
     "ipython>=8.13.2",
     "deep-sort-realtime>=1.3.2",
+    "super-gradients>=3.1.1",
 ]
 requires-python = ">=3.10"
 readme = "README.md"
