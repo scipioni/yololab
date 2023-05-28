@@ -21,8 +21,13 @@ class Net:
         if self.frame_dirty is None:
             self.frame_dirty = self.frame.copy()
     
-    def show(self):
-        cv.imshow(self.config.model, self.frame if self.frame_dirty is None else self.frame_dirty)
+    def show(self, scale=1.0):
+        frame = self.frame if self.frame_dirty is None else self.frame_dirty
+        if scale != 1.0:
+            h,w = frame.shape[:2]
+            dim = (int(w*scale), int(h*scale))
+            frame = cv.resize(frame, dim, interpolation = cv.INTER_AREA)
+        cv.imshow(self.config.model, frame)
 
 
 class Body:
@@ -118,7 +123,7 @@ class NetYoloPose(Net):
             body.show(self.frame_dirty)
 
 
-    def show(self):
+    def show(self, scale=1.0):
         self.prepare_show()
         if self.config.show_ann:
             self.frame_dirty = self.results[0].plot()
@@ -127,7 +132,7 @@ class NetYoloPose(Net):
             self.draw_keypoints()
             self.draw_bodies()
             
-        super().show()
+        super().show(scale=scale)
 
   
 
