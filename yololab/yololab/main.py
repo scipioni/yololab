@@ -5,7 +5,7 @@ import logging
 
 import cv2 as cv
 
-from . import dnn
+from .utils import dnn
 from .grabber import DummyGrabber, FileGrabber, WebcamGrabber
 from .timing import timing
 
@@ -38,7 +38,7 @@ async def grab(config, net):
         net.predict(frame)
 
         if config.show:
-            net.show(scale=2)
+            net.show(scale=1)
 
         if grabber.key == "w":
             pass
@@ -61,5 +61,5 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    main()  
 

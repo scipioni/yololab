@@ -6,7 +6,7 @@ import numpy as np
 from ultralytics import YOLO
 from ultralytics.yolo.utils.plotting import Annotator
 
-from . import utils
+from . import draw
 
 log = logging.getLogger(__name__)
 class Net:
@@ -38,13 +38,13 @@ class Body:
 
     
     def show(self, frame):
-        utils.draw_point(frame, xy=self.xy_neck, color=(255,255,0), radius=8)
-        utils.draw_point(frame, xy=self.xy_ilium, color=(255,255,0), radius=8)
-        utils.draw_segment(frame, start_point=self.xy_neck, end_point=self.xy_ilium, color=(0,0,255), thickness=3, lineType=8)
+        draw.draw_point(frame, xy=self.xy_neck, color=(255,255,0), radius=8)
+        draw.draw_point(frame, xy=self.xy_ilium, color=(255,255,0), radius=8)
+        draw.draw_segment(frame, start_point=self.xy_neck, end_point=self.xy_ilium, color=(0,0,255), thickness=3, lineType=8)
         if self.isLaying():
-            utils.draw_text(frame, f"laying{self.i}", self.xy_neck, color=(255,0,255))
+            draw.draw_text(frame, f"laying{self.i}", self.xy_neck, color=(255,0,255))
         else:
-            utils.draw_text(frame, f"neck{self.i}", self.xy_neck, color=(255,255,0))
+            draw.draw_text(frame, f"neck{self.i}", self.xy_neck, color=(255,255,0))
 
     def isLaying(self):
         return True
@@ -75,10 +75,8 @@ class NetYoloPose(Net):
 
     def calculate_bodies(self):
         bodies = []
-        #for result in self.results:
 
-
-        keypointsm = self.results[0].keypoints.squeeze().tolist()
+        keypointsm = self.results[0].keypoints.xy
         if len(keypointsm) > 16:
             keypointsm = [keypointsm]
 
@@ -101,7 +99,7 @@ class NetYoloPose(Net):
 
 
     def draw_keypoints(self):
-        keypointsm = self.results[0].keypoints.squeeze().tolist()
+        keypointsm = self.results[0].keypoints.xy
         if len(keypointsm) > 16:
             keypointsm = [keypointsm]
 
@@ -114,8 +112,8 @@ class NetYoloPose(Net):
                 except:
                     continue
                 if confidence > self.config.confidence_min:
-                    utils.draw_point(self.frame_dirty, xy=(x,y))
-                    utils.draw_text(self.frame_dirty, str(i), (x,y))
+                    draw.draw_point(self.frame_dirty, xy=(x,y))
+                    draw.draw_text(self.frame_dirty, str(i), (x,y))
 
 
     def draw_bodies(self):
@@ -159,7 +157,7 @@ there is no built-in way to get a specific keypoint (like the left shoulder) via
 
 
 from ultralytics.yolo.engine.results import Results
-from ultralytics.yolo.utils.plotting import Annotator
+from ultralytics.yolo.draw.plotting import Annotator
 results: Results = model.predict(frame)[0]
 
 keypoints = results.keypoints.squeeze().tolist()
