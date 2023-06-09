@@ -46,7 +46,7 @@ class DatasetFormatter():
         else: self.IMAGE_EXTENSION = args.image_ext
 
         if not args.angle_format: self.ANGLE_FORMAT = False
-        elif not args.filter and not args.xml: parser.error("--angle-format needs --filter or --xml to work")
+        # elif not args.filter and not args.xml: parser.error("--angle-format needs --filter or --xml to work")
         else: self.ANGLE_FORMAT = True
 
         if args.output_dir: self.OUTPUT_PATH = args.output_dir
