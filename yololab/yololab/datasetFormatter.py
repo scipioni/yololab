@@ -2,14 +2,12 @@ import os, glob
 import argparse
 import imagesize
 from functools import partial
-import xml.etree.ElementTree as ET
 
 class DatasetFormatter():
     def __init__(self):
         parser = argparse.ArgumentParser()
         parser.add_argument('--filter', required=False, action='store_true')
         parser.add_argument('--normalize', required=False, action='store_true')
-        parser.add_argument('--xml', required=False, action='store_true')
         parser.add_argument('--dir', type=str, required=True)
         parser.add_argument('--threshold', type=str, required=False)
         parser.add_argument('--image-ext', type=str, required=False)
@@ -21,17 +19,12 @@ class DatasetFormatter():
         
         self.FILTER = False
         self.NORMALIZE = False
-        self.TO_XML = False
         if args.filter:
             self.FILTER = True
             if args.normalize: self.NORMALIZE = True
-            if args.xml: self.TO_XML = True
         elif args.normalize:
             self.NORMALIZE = True
-            if args.xml: self.TO_XML = True
-        elif args.xml:
-            self.TO_XML = True
-        else: parser.error("At least one of --filter --normalize and --xml required")
+        else: parser.error("At least one of --filter and --normalize required")
 
         self.DIRECTORY_PATH = args.dir
 
@@ -40,13 +33,11 @@ class DatasetFormatter():
         else: self.RATIO_THRESHOLD = args.threshold
         
         if not args.image_ext:
-            if args.xml: parser.error("--xml needs --image_ext to work")
-            else: self.IMAGE_EXTENSION = "jpg"
-        elif not args.normalize and not args.xml: parser.error("--image-ext needs --normalize or --xml to work")
+            self.IMAGE_EXTENSION = "jpg"
+        elif not args.normalize: parser.error("--image-ext needs --normalize to work")
         else: self.IMAGE_EXTENSION = args.image_ext
 
         if not args.angle_format: self.ANGLE_FORMAT = False
-        # elif not args.filter and not args.xml: parser.error("--angle-format needs --filter or --xml to work")
         else: self.ANGLE_FORMAT = True
 
         if args.output_dir: self.OUTPUT_PATH = args.output_dir
@@ -86,23 +77,10 @@ class DatasetFormatter():
         string = string[:len(string)-1]
         return string
 
-    def format_to_xml(self, lineList, directoryList, fileBaseName, filePath):
-        annotation = ET.Element('annotation')
-        folder = ET.SubElement(annotation, 'folder')
-        folder.text = directoryList[len(directoryList)-1]
-        filename = ET.SubElement(annotation, 'filename')
-        filename.text = fileBaseName[:len(fileBaseName)-3] + self.IMAGE_EXTENSION
-        path = ET.SubElement(annotation, 'path')
-        path.text = filePath[:len(filePath)-3] + self.IMAGE_EXTENSION
-        return ET.tostring(annotation)
-
     def write_to_file(self, filename, lineList, directoryPath=None):
         if not directoryPath: directoryPath = self.DIRECTORY_PATH
         filePath = ""
         fileBaseName = os.path.basename(filename)
-        if self.TO_XML:
-            fileBaseName = fileBaseName[:len(fileBaseName)-3] + "xml"
-            directoryList = []
 
         if self.WORKING_ON_DATABASE:
             directoryList = directoryPath.split("/")
@@ -112,14 +90,9 @@ class DatasetFormatter():
         else:
             filePath = self.OUTPUT_PATH + "/" + fileBaseName
         
-        if self.TO_XML: 
-            with open(filePath, 'wb') as fp:
-                text = self.format_to_xml(lineList, directoryList,
-                                                    fileBaseName, filePath)
-        else:
-            with open(filePath, 'w') as fp:
-                text = self.convert_list_to_string(lineList, "\n")
-                fp.write(text)
+        with open(filePath, 'w') as fp:
+            text = self.convert_list_to_string(lineList, "\n")
+            fp.write(text)
 
     def process_file(self, filename, directoryPath=None):
         if not directoryPath: directoryPath = self.DIRECTORY_PATH
@@ -154,8 +127,7 @@ class DatasetFormatter():
                         numberList[0] = '1'
                         layingPeopleCount += 1
                 
-                if self.TO_XML: lineList.append(numberList)
-                else: lineList.append(self.convert_list_to_string(numberList, " "))
+                lineList.append(self.convert_list_to_string(numberList, " "))
             
             self.write_to_file(filename, lineList, directoryPath)
         if self.VERBOSE and self.FILTER and layingPeopleCount > 0: 
