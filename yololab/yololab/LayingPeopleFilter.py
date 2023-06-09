@@ -45,7 +45,7 @@ class LayingFilter():
     
         for pathItems in map(nestedRootPath, filteredDirectorylist):
             makeDirectory(pathItems)
-    
+
     def convert_list_to_string(self, list, delimiter=""):
         string = ""
         for element in list:
@@ -70,6 +70,7 @@ class LayingFilter():
 
     def process_file(self, filename, directoryPath=None):
         if not directoryPath: directoryPath = self.DIRECTORY_PATH
+        layingPeopleCount = 0
         with open(os.path.join(os.getcwd(), filename), 'r') as f:
             lineList = []
             for line in f:
@@ -77,15 +78,25 @@ class LayingFilter():
                 ratio = float(numberList[3]) / float(numberList[4])
                 if ratio >= self.RATIO_THRESHOLD:
                     numberList[0] = '1'
-                    if self.VERBOSE: print(filename, "has a laying person")
+                    layingPeopleCount += 1
                 filteredLine = self.convert_list_to_string(numberList, " ")
                 lineList.append(filteredLine)
             self.create_filtered_file(filename, lineList, directoryPath)
+        if self.VERBOSE and layingPeopleCount > 0: 
+            fileBaseName = os.path.basename(filename)
+            if layingPeopleCount == 1: print("{filename} has a laying person".format(filename = fileBaseName))
+            else: print("{filename} has {count} laying people".format(filename = fileBaseName,
+                                                                      count = layingPeopleCount))
+        return layingPeopleCount
 
     def filter_directory(self, directoryPath = None):
         if not directoryPath: directoryPath = self.DIRECTORY_PATH
+        totalLayingPeopleCount = 0
         for filename in glob.glob(directoryPath + '/*.txt'):
-            self.process_file(filename, directoryPath)
+            fileLayingPeopleCount = self.process_file(filename, directoryPath)
+            totalLayingPeopleCount += fileLayingPeopleCount
+        print("{directory} has {count} laying people".format(directory = directoryPath,
+                                                             count = totalLayingPeopleCount))
 
     def filter_database(self):
         self.create_directory_tree()
