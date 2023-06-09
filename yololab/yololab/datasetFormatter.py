@@ -129,7 +129,7 @@ class DatasetFormatter():
             for line in f:
                 numberList = line.split()
                 for i in range(len(numberList)):
-                    numberList[i] = float(numberList[i])
+                    if i != 0: numberList[i] = float(numberList[i])
                 
                 if self.ANGLE_FORMAT:
                     convertedNumberList = []
