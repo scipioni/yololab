@@ -112,12 +112,14 @@ class DatasetFormatter():
         else:
             filePath = self.OUTPUT_PATH + "/" + fileBaseName
         
-        with open(filePath, 'wb') as fp:
-            text = ""
-            if self.TO_XML: text = self.format_to_xml(lineList, directoryList,
-                                                      fileBaseName, filePath)
-            else: text = self.convert_list_to_string(lineList, "\n")
-            fp.write(text)
+        if self.TO_XML: 
+            with open(filePath, 'wb') as fp:
+                text = self.format_to_xml(lineList, directoryList,
+                                                    fileBaseName, filePath)
+        else:
+            with open(filePath, 'w') as fp:
+                text = self.convert_list_to_string(lineList, "\n")
+                fp.write(text)
 
     def process_file(self, filename, directoryPath=None):
         if not directoryPath: directoryPath = self.DIRECTORY_PATH
