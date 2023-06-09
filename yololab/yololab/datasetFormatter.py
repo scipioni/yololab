@@ -35,7 +35,7 @@ class DatasetFormatter():
         else: self.IMAGE_EXTENSION = args.image-ext
 
         if args.output_dir: self.OUTPUT_PATH = args.outputDir
-        else: self.OUTPUT_PATH = 'outputDir'
+        else: self.OUTPUT_PATH = 'formatted_output'
 
         if args.verbose: self.VERBOSE = True
         else: self.VERBOSE = False
