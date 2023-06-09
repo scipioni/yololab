@@ -97,17 +97,21 @@ class LayingFilter():
             totalLayingPeopleCount += fileLayingPeopleCount
         print("{directory} has {count} laying people".format(directory = directoryPath,
                                                              count = totalLayingPeopleCount))
+        return totalLayingPeopleCount
 
     def filter_database(self):
         self.create_directory_tree()
 
         print("Processing training directory...")
-        self.filter_directory(self.DIRECTORY_PATH + '/archive/dataset/person/train-coco')
+        trainLayingPeopleCount = self.filter_directory(self.DIRECTORY_PATH + '/archive/dataset/person/train-coco')
         print("train-coco Done!")
 
         print("Processing testing directory...")
-        self.filter_directory(self.DIRECTORY_PATH + '/archive/dataset/person/test-coco')
+        testLayingPeopleCount = self.filter_directory(self.DIRECTORY_PATH + '/archive/dataset/person/test-coco')
         print("test-coco Done!")
+
+        print("The database has {count} laying people".format(count = trainLayingPeopleCount + testLayingPeopleCount))
+        print("All Done!")
 
 if __name__ == '__main__':
     filter = LayingFilter()
