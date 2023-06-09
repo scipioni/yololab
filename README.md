@@ -12,7 +12,7 @@ https://github.com/ultralytics/ultralytics
 ## setup
 
 ```
-task setup
+go-task setup
 ```
 
 
