@@ -3,7 +3,7 @@ import argparse
 import imagesize
 from functools import partial
 
-class LayingFilter():
+class DatabaseFormatter():
     def __init__(self):
         parser = argparse.ArgumentParser()
         parser.add_argument('--filter', required=False, action='store_true')
@@ -142,4 +142,4 @@ class LayingFilter():
         print("All Done!")
 
 if __name__ == '__main__':
-    filter = LayingFilter()
+    formatter = DatabaseFormatter()
