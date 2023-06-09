@@ -32,7 +32,7 @@ class LayingFilter():
             print("Processing directory...")
             self.filter_directory()
         print("Done!")
-    
+
     def create_output_directory(self):
         makeDirectory = partial(os.makedirs, exist_ok=True)
         makeDirectory(self.OUTPUT_PATH)
@@ -45,22 +45,27 @@ class LayingFilter():
     
         for pathItems in map(nestedRootPath, filteredDirectorylist):
             makeDirectory(pathItems)
+    
+    def convert_list_to_string(self, list, delimiter=""):
+        string = ""
+        for element in list:
+            string += element + delimiter
+        string = string[:len(string)-1]
+        return string
 
     def create_filtered_file(self, filename, lineList, directoryPath=None):
         if not directoryPath: directoryPath = self.DIRECTORY_PATH
-        directoryList = directoryPath.split("/")
-        formattedDirectory = ""
-        for i in range(len(directoryList)):
-            if i > 1 or ( self.WORKING_ON_DATABASE and i > 0 ):
-                formattedDirectory += directoryList[i] + "/"
         filePath = ""
-        if self.WORKING_ON_DATABASE: filePath = self.OUTPUT_PATH + "/" + formattedDirectory + os.path.basename(filename)
-        else: filePath = self.OUTPUT_PATH + "/" + os.path.basename(filename)
+        if self.WORKING_ON_DATABASE:
+            directoryList = directoryPath.split("/")
+            directoryList.pop(0)
+            formattedDirectory = self.convert_list_to_string(directoryList, "/")
+            filePath = self.OUTPUT_PATH + "/" + formattedDirectory + "/" + os.path.basename(filename)
+        else:
+            filePath = self.OUTPUT_PATH + "/" + os.path.basename(filename)
+        
         with open(filePath, 'w') as fp:
-            text = ""
-            for line in lineList:
-                text += line + "\n"
-            text = text[:len(text)-1]
+            text = self.convert_list_to_string(lineList, "\n")
             fp.write(text)
 
     def process_file(self, filename, directoryPath=None):
@@ -73,10 +78,7 @@ class LayingFilter():
                 if ratio >= self.RATIO_THRESHOLD:
                     numberList[0] = '1'
                     if self.VERBOSE: print(filename, "has a laying person")
-                filteredLine = ""
-                for element in numberList:
-                    filteredLine += element + " "
-                filteredLine = filteredLine[:len(filteredLine)-1]
+                filteredLine = self.convert_list_to_string(numberList, " ")
                 lineList.append(filteredLine)
             self.create_filtered_file(filename, lineList, directoryPath)
 
