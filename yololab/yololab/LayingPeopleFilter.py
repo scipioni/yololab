@@ -9,7 +9,7 @@ class LayingFilter():
         parser.add_argument('--threshold', type=str, required=False)
         parser.add_argument('--outputDir', type=str, required=False)
         parser.add_argument('--database', required=False, action='store_true')
-        parser.add_argument('--printLayingFiles', required=False, action='store_true')
+        parser.add_argument('--verbose', required=False, action='store_true')
         args = parser.parse_args()
 
         self.DIRECTORY_PATH = args.dir
@@ -20,8 +20,8 @@ class LayingFilter():
         if args.outputDir: self.OUTPUT_PATH = args.outputDir
         else: self.OUTPUT_PATH = 'filteredDir'
 
-        if args.printLayingFiles: self.PRINT_LAYING_FILES = True
-        else: self.PRINT_LAYING_FILES = False
+        if args.verbose: self.VERBOSE = True
+        else: self.VERBOSE = False
 
         if args.database:
             self.WORKING_ON_DATABASE = True
@@ -57,15 +57,11 @@ class LayingFilter():
         if self.WORKING_ON_DATABASE: filePath = self.OUTPUT_PATH + "/" + formattedDirectory + os.path.basename(filename)
         else: filePath = self.OUTPUT_PATH + "/" + os.path.basename(filename)
         with open(filePath, 'w') as fp:
-            full_text = ""
+            text = ""
             for line in lineList:
-                text = ""
-                for element in line:
-                    text += element + " "
-                text = text[:len(text)-1]
-                full_text += text + "\n"
-            full_text = full_text[:len(full_text)-1]
-            fp.write(full_text)
+                text += line + "\n"
+            text = text[:len(text)-1]
+            fp.write(text)
 
     def process_file(self, filename, directoryPath=None):
         if not directoryPath: directoryPath = self.DIRECTORY_PATH
@@ -76,8 +72,12 @@ class LayingFilter():
                 ratio = float(numberList[3]) / float(numberList[4])
                 if ratio >= self.RATIO_THRESHOLD:
                     numberList[0] = '1'
-                    if self.PRINT_LAYING_FILENAMES: print(filename, "has a laying person")
-                lineList.append(numberList)
+                    if self.VERBOSE: print(filename, "has a laying person")
+                filteredLine = ""
+                for element in numberList:
+                    filteredLine += element + " "
+                filteredLine = filteredLine[:len(filteredLine)-1]
+                lineList.append(filteredLine)
             self.create_filtered_file(filename, lineList, directoryPath)
 
     def filter_directory(self, directoryPath = None):
@@ -88,11 +88,11 @@ class LayingFilter():
     def filter_database(self):
         self.create_directory_tree()
 
-        print("Processing train directory...")
+        print("Processing training directory...")
         self.filter_directory(self.DIRECTORY_PATH + '/archive/dataset/person/train-coco')
         print("train-coco Done!")
 
-        print("Processing test directory...")
+        print("Processing testing directory...")
         self.filter_directory(self.DIRECTORY_PATH + '/archive/dataset/person/test-coco')
         print("test-coco Done!")
 
