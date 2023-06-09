@@ -2,27 +2,36 @@ import os, glob
 import argparse
 import imagesize
 from functools import partial
+import xml.etree.ElementTree as ET
 
 class DatasetFormatter():
     def __init__(self):
         parser = argparse.ArgumentParser()
         parser.add_argument('--filter', required=False, action='store_true')
         parser.add_argument('--normalize', required=False, action='store_true')
+        parser.add_argument('--xml', required=False, action='store_true')
         parser.add_argument('--dir', type=str, required=True)
         parser.add_argument('--threshold', type=str, required=False)
         parser.add_argument('--image-ext', type=str, required=False)
         parser.add_argument('--output-dir', type=str, required=False)
         parser.add_argument('--database', required=False, action='store_true')
+        parser.add_argument('--angle-format', required=False, action='store_true')
         parser.add_argument('--verbose', required=False, action='store_true')
         args = parser.parse_args()
         
         self.FILTER = False
         self.NORMALIZE = False
+        self.TO_XML = False
         if args.filter:
             self.FILTER = True
             if args.normalize: self.NORMALIZE = True
-        elif args.normalize: self.NORMALIZE = True
-        else: parser.error("At least one of --filter and --normalize required")
+            if args.xml: self.TO_XML = True
+        elif args.normalize:
+            self.NORMALIZE = True
+            if args.xml: self.TO_XML = True
+        elif args.xml:
+            self.TO_XML = True
+        else: parser.error("At least one of --filter --normalize and --xml required")
 
         self.DIRECTORY_PATH = args.dir
 
@@ -30,11 +39,17 @@ class DatasetFormatter():
         elif not args.filter: parser.error("--threshold needs --filter to work")
         else: self.RATIO_THRESHOLD = args.threshold
         
-        if not args.image_ext: self.IMAGE_EXTENSION = "jpg"
-        elif not args.normalize: parser.error("--image-ext needs --normalize to work")
-        else: self.IMAGE_EXTENSION = args.image-ext
+        if not args.image_ext:
+            if args.xml: parser.error("--xml needs --image_ext to work")
+            else: self.IMAGE_EXTENSION = "jpg"
+        elif not args.normalize and not args.xml: parser.error("--image-ext needs --normalize or --xml to work")
+        else: self.IMAGE_EXTENSION = args.image_ext
 
-        if args.output_dir: self.OUTPUT_PATH = args.outputDir
+        if not args.angle_format: self.ANGLE_FORMAT = False
+        elif not args.filter and not args.xml: parser.error("--angle-format needs --filter or --xml to work")
+        else: self.ANGLE_FORMAT = True
+
+        if args.output_dir: self.OUTPUT_PATH = args.output_dir
         else: self.OUTPUT_PATH = 'formatted_output'
 
         if args.verbose: self.VERBOSE = True
@@ -71,19 +86,37 @@ class DatasetFormatter():
         string = string[:len(string)-1]
         return string
 
+    def format_to_xml(self, lineList, directoryList, fileBaseName, filePath):
+        annotation = ET.Element('annotation')
+        folder = ET.SubElement(annotation, 'folder')
+        folder.text = directoryList[len(directoryList)-1]
+        filename = ET.SubElement(annotation, 'filename')
+        filename.text = fileBaseName[:len(fileBaseName)-3] + self.IMAGE_EXTENSION
+        path = ET.SubElement(annotation, 'path')
+        path.text = filePath[:len(filePath)-3] + self.IMAGE_EXTENSION
+        return ET.tostring(annotation)
+
     def write_to_file(self, filename, lineList, directoryPath=None):
         if not directoryPath: directoryPath = self.DIRECTORY_PATH
         filePath = ""
+        fileBaseName = os.path.basename(filename)
+        if self.TO_XML:
+            fileBaseName = fileBaseName[:len(fileBaseName)-3] + "xml"
+            directoryList = []
+
         if self.WORKING_ON_DATABASE:
             directoryList = directoryPath.split("/")
             directoryList.pop(0)
             formattedDirectory = self.convert_list_to_string(directoryList, "/")
-            filePath = self.OUTPUT_PATH + "/" + formattedDirectory + "/" + os.path.basename(filename)
+            filePath = self.OUTPUT_PATH + "/" + formattedDirectory + "/" + fileBaseName
         else:
-            filePath = self.OUTPUT_PATH + "/" + os.path.basename(filename)
+            filePath = self.OUTPUT_PATH + "/" + fileBaseName
         
-        with open(filePath, 'w') as fp:
-            text = self.convert_list_to_string(lineList, "\n")
+        with open(filePath, 'wb') as fp:
+            text = ""
+            if self.TO_XML: text = self.format_to_xml(lineList, directoryList,
+                                                      fileBaseName, filePath)
+            else: text = self.convert_list_to_string(lineList, "\n")
             fp.write(text)
 
     def process_file(self, filename, directoryPath=None):
@@ -95,6 +128,16 @@ class DatasetFormatter():
                 numberList = line.split()
                 for i in range(len(numberList)):
                     numberList[i] = float(numberList[i])
+                
+                if self.ANGLE_FORMAT:
+                    convertedNumberList = []
+                    convertedNumberList.append( numberList[0] )
+                    convertedNumberList.append( (numberList[1] + numberList[2]) / 2 )
+                    convertedNumberList.append( (numberList[3] + numberList[4]) / 2 )
+                    convertedNumberList.append( numberList[2] - numberList[1] )
+                    convertedNumberList.append( numberList[4] - numberList[3])
+                    numberList = convertedNumberList
+
                 if self.NORMALIZE:
                     imageName = filename[:len(filename)-3] + self.IMAGE_EXTENSION
                     imageWidth, imageHeight = imagesize.get(imageName)
@@ -102,13 +145,16 @@ class DatasetFormatter():
                     numberList[2] = numberList[2] / imageHeight
                     numberList[3] = numberList[3] / imageWidth
                     numberList[4] = numberList[4] / imageHeight
+                
                 if self.FILTER:
                     ratio = numberList[3] / numberList[4]
                     if ratio >= self.RATIO_THRESHOLD:
                         numberList[0] = '1'
                         layingPeopleCount += 1
-                outputLine = self.convert_list_to_string(numberList, " ")
-                lineList.append(outputLine)
+                
+                if self.TO_XML: lineList.append(numberList)
+                else: lineList.append(self.convert_list_to_string(numberList, " "))
+            
             self.write_to_file(filename, lineList, directoryPath)
         if self.VERBOSE and self.FILTER and layingPeopleCount > 0: 
             fileBaseName = os.path.basename(filename)
