@@ -53,6 +53,14 @@ class Body:
     def __repr__(self):
         return f"body i={self.i} neck={self.xy_neck}"
 class NetYoloPose(Net):
+    """
+        pytorch-quantization          2.1.2
+        torch                         2.0.1
+        torchinfo                     1.8.0
+        torchmetrics                  0.8.0
+        torchvision                   0.15.2
+
+    """
     def __init__(self, config):
         super().__init__(config)
 
@@ -76,7 +84,7 @@ class NetYoloPose(Net):
     def calculate_bodies(self):
         bodies = []
 
-        keypointsm = self.results[0].keypoints.squeeze().tolist()
+        keypointsm = self.results[0].keypoints.xy #squeeze().tolist()
         if len(keypointsm) > 16:
             keypointsm = [keypointsm]
 
@@ -99,7 +107,7 @@ class NetYoloPose(Net):
 
 
     def draw_keypoints(self):
-        keypointsm = self.results[0].keypoints.squeeze().tolist()
+        keypointsm = self.results[0].keypoints.xy #squeeze().tolist()
         if len(keypointsm) > 16:
             keypointsm = [keypointsm]
 
