@@ -76,7 +76,7 @@ class NetYoloPose(Net):
     def calculate_bodies(self):
         bodies = []
 
-        keypointsm = self.results[0].keypoints.xy
+        keypointsm = self.results[0].keypoints.squeeze().tolist()
         if len(keypointsm) > 16:
             keypointsm = [keypointsm]
 
@@ -99,7 +99,7 @@ class NetYoloPose(Net):
 
 
     def draw_keypoints(self):
-        keypointsm = self.results[0].keypoints.xy
+        keypointsm = self.results[0].keypoints.squeeze().tolist()
         if len(keypointsm) > 16:
             keypointsm = [keypointsm]
 
