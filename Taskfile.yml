@@ -11,12 +11,12 @@ tasks:
       - go-task -l
     silent: true
 
-  setup:
+  venv:
     cmds:
       - python3.9 -mvenv .venv
       - .venv/bin/pip install -e yololab
       - .venv/bin/pip install nvidia-pyindex
-      - .venv/bin/pip install pytorch-quantization
+      - .venv/bin/pip install pytorch-quantization black
 
       #- task: download
     status:

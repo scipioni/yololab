@@ -5,14 +5,13 @@ https://github.com/ultralytics/ultralytics
 
 ## prereq
 
+- python 3.9
 - taskfile https://taskfile.dev
-- python virtualenv
-
 
 ## setup
 
 ```
-go-task setup
+go-task venv
 ```
 
 
