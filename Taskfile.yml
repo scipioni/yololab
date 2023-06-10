@@ -13,7 +13,7 @@ tasks:
 
   setup:
     cmds:
-      - python3 -mvenv .venv
+      - python3.9 -mvenv .venv
       - .venv/bin/pip install -e yololab
       #- task: download
     status:
