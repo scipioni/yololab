@@ -19,7 +19,7 @@ tasks:
     status:
       - test -f .venv/bin/yolo
 
-  download:
+  download:pothole:
     cmds:
       - |
         mkdir -p datasets
@@ -27,6 +27,22 @@ tasks:
         wget -O tmp.zip https://www.dropbox.com/s/qvglw8pqo16769f/pothole_dataset_v8.zip?dl=1 && unzip tmp.zip && rm tmp.zip
     status:
       - test -f datasets/pothole_dataset_v8/pothole.yaml
+
+  download:fpds:
+    cmds:
+      - |
+        cd datasets
+        mkdir -p fpds
+        cd fpds
+        wget --content-disposition "https://universidaddealcala-my.sharepoint.com/:u:/g/personal/gram_uah_es/EXYxgnEftbtCp2iCgAaWDDQBcAuouxLrV_2kxBDalj3m4w?&Download=1"
+        tar xvf test.tar* && rm test.tar*
+        wget --content-disposition "https://universidaddealcala-my.sharepoint.com/:u:/g/personal/gram_uah_es/EXQImG_yi5xOifMZYz79_hcBlxATrYEZP5mCu-li4dcWDw?&Download=1"
+        tar xvf train.tar* && rm train.tar*
+        wget --content-disposition "https://universidaddealcala-my.sharepoint.com/:u:/g/personal/gram_uah_es/EULm_4e4bgBKqnsTxDB5Br4BKf9rApBjYi7T0QrWyJrppw??&Download=1"
+        tar xvf valid.tar* && rm valid.tar* 
+    status:
+      - test -f datasets/fpds/test/split6/split6_002.txt
+
 
   train:
     cmds:

@@ -26,3 +26,6 @@ https://learnopencv.com/train-yolov8-on-custom-dataset/
 task download
 ```
 
+### fpds fallen people data set
+
+https://gram.web.uah.es/data/datasets/fpds/index.html
