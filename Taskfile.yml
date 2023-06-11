@@ -104,3 +104,12 @@ tasks:
       - python yololab/yololab/experiments/onxx.py --model models/yolov8n.onnx --img samples/dogs.webp
 
 
+  opencv:
+    cmds:
+      - |
+        cd build/opencv-python
+        export CMAKE_ARGS="-DBUILD_opencv_world=ON -DWITH_CUDA=ON -DCUDA_FAST_MATH=ON -DWITH_CUBLAS=ON -DCUDA_ARCH_PTX=8.6 -DWITH_NVCUVID=ON"
+        export ENABLE_CONTRIB=1
+        export CC=gcc-11
+        export CXX=g++-11
+        pip wheel . --verbose
