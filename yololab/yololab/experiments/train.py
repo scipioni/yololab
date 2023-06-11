@@ -1,6 +1,8 @@
 # https://www.kaggle.com/general/409402
 # https://colab.research.google.com/drive/1y3WizmNlta6J6BWm46ZfFw1fqpFBSyYM?usp=sharing#scrollTo=9dYhaydLvuCO
 
+import sys
+
 from super_gradients.training import Trainer, dataloaders, models
 from super_gradients.training.dataloaders.dataloaders import (
     coco_detection_yolo_format_train,
@@ -13,10 +15,14 @@ from super_gradients.training.models.detection_models.pp_yolo_e import (
 )
 
 CHECKPOINT_DIR = "checkpoints"
-CHECKPOINT_NAME = "my_first_yolonas_run"
+try:
+    CHECKPOINT_NAME = sys.argv[1]
+except:
+    CHECKPOINT_NAME = "test1"
+EPOCHS = 1
 
 dataset_params = {
-    "data_dir": "/lab/yololab-github/datasets/fpds",
+    "data_dir": "./datasets/fpds",
     "train_images_dir": "train/split1",
     "train_labels_dir": "train/split1",
     "val_images_dir": "valid/split12",
@@ -72,7 +78,7 @@ train_params = {
     "ema": True,
     "ema_params": {"decay": 0.9, "decay_type": "threshold"},
     # ONLY TRAINING FOR 10 EPOCHS FOR THIS EXAMPLE NOTEBOOK
-    "max_epochs": 10,
+    "max_epochs": EPOCHS,
     "mixed_precision": True,
     "loss": PPYoloELoss(
         use_static_assigner=False,

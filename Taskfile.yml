@@ -49,11 +49,22 @@ tasks:
 
   train:
     cmds:
-      - yolo train data=coco8.yaml model=models/yolov8n.pt epochs=1 lr0=0.01
+      #- yolo train data=coco8.yaml model=models/yolov8n.pt epochs=1 lr0=0.01
+      - mkdir -p checkpoints
+      - rm -fR checkpoints/test1
+      - python yololab/yololab/experiments/train.py test1
   
+
+
   export:
     cmds:
-      - yolo export model=models/yolov8n.pt imgsz=640 format=onnx opset=12
+      #- yolo export model=models/yolov8n.pt imgsz=640 format=onnx opset=12
+      - python custom-nas-model-metadata.py -m checkpoints/test1/ckpt_best.pth -t yolo_nas_s -n 2 --export-onnx models/test1.onnx
+
+
+  predict:
+    cmds:
+      - python yolo-nas-onnx/yolo-nas-py/detect.py -m models/test1.onnx -i samples/fp1.png --custom-metadata models/test1.json
 
   update:
     cmds:
@@ -67,3 +78,5 @@ tasks:
   test:onxx:
     cmds:
       - python yololab/yololab/experiments/onxx.py --model models/yolov8n.onnx --img samples/dogs.webp
+
+

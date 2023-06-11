@@ -43,37 +43,41 @@ summary(
     row_settings=["var_names"],
 )
 
-
-model = best_model.cpu()
-model.eval()
-model.prep_model_for_conversion(input_size=(1, 3, 640, 640))
-
-dummy_input = torch.randn(1, 3, 640, 640, device="cpu")
+net = models.get("yolo_nas_s", pretrained_weights="coco")
 
 onnx_filename = "models/yolo_nas_s_640.onnx"
+models.convert_to_onnx(model=net, input_shape=(3,640,640), out_path=onnx_filename)
+print(f"saved {onnx_filename}")
+
+# model = best_model.cpu()
+# model.eval()
+# model.prep_model_for_conversion(input_size=(1, 3, 640, 640))
+
+# dummy_input = torch.randn(1, 3, 640, 640, device="cpu")
 
 
-dummy_input = torch.randn(1, 3, 640, 640)
-# torch_out = torch_model(dummy_input)
 
-# Export the model
-torch.onnx.export(
-    model,  # model being run
-    dummy_input,  # model input (or a tuple for multiple inputs)
-    onnx_filename,  # where to save the model (can be a file or file-like object)
-    verbose=True,
-    input_names=["input"],
-    output_names=["output"],
-    opset_version=12,
+# dummy_input = torch.randn(1, 3, 640, 640)
+# # torch_out = torch_model(dummy_input)
 
-    #   export_params=True,        # store the trained parameter weights inside the model file
-    #   opset_version=12,          # the ONNX version to export the model to
-    #   do_constant_folding=True,  # whether to execute constant folding for optimization
-    #   input_names = ['input'],   # the model's input names
-    #   output_names = ['output'], # the model's output names
-    #   dynamic_axes={'input' : {0 : 'batch_size'},    # variable length axes
-    #                 'output' : {0 : 'batch_size'}}
-)
+# # Export the model
+# torch.onnx.export(
+#     model,  # model being run
+#     dummy_input,  # model input (or a tuple for multiple inputs)
+#     onnx_filename,  # where to save the model (can be a file or file-like object)
+#     verbose=True,
+#     input_names=["input"],
+#     output_names=["output"],
+#     opset_version=12,
+
+#     #   export_params=True,        # store the trained parameter weights inside the model file
+#     #   opset_version=12,          # the ONNX version to export the model to
+#     #   do_constant_folding=True,  # whether to execute constant folding for optimization
+#     #   input_names = ['input'],   # the model's input names
+#     #   output_names = ['output'], # the model's output names
+#     #   dynamic_axes={'input' : {0 : 'batch_size'},    # variable length axes
+#     #                 'output' : {0 : 'batch_size'}}
+# )
 
 # torch.onnx.export(model, dummy_input, onnx_filename, opset_version=12)
 
