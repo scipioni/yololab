@@ -5,8 +5,11 @@ https://github.com/ultralytics/ultralytics
 
 ## prereq
 
-- python 3.9
+- python >= 3.9
 - taskfile https://taskfile.dev
+
+for CUDA suppor on arch
+- sudo pacman -S opencv-cuda python-opencv
 
 ## setup
 

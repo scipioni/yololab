@@ -13,14 +13,27 @@ tasks:
 
   venv:
     cmds:
-      - python3.9 -mvenv .venv
+      - python -mvenv .venv --system-site-packages
+      - .venv/bin/pip install --upgrade pip
       - .venv/bin/pip install -e yololab
-      - .venv/bin/pip install nvidia-pyindex
-      - .venv/bin/pip install pytorch-quantization black
+      # - .venv/bin/pip install nvidia-pyindex
+      # - .venv/bin/pip install pytorch-quantization black
 
       #- task: download
     status:
       - test -f .venv/bin/yolo
+
+
+  venv:test:
+    silent: true
+    cmds:
+      - |
+        .venv/bin/python - <<EOF
+        import cv2
+
+        print("OpenCV version:", cv2.__version__)
+        print("CUDA supported:", cv2.cuda.getCudaEnabledDeviceCount() > 0)
+        EOF
 
   download:pothole:
     cmds:
@@ -47,13 +60,24 @@ tasks:
       - test -f datasets/fpds/test/split6/split6_002.txt
 
 
-  train:
+  test:predict:
     cmds:
-      #- yolo train data=coco8.yaml model=models/yolov8n.pt epochs=1 lr0=0.01
-      - mkdir -p checkpoints
-      - rm -fR checkpoints/test1
-      - python yololab/yololab/experiments/train.py test1
+      - yolo mode=predict model=models/yolov8n.pt source=0 show=True
+      #- yolo predict model=models/yolov8n.pt source='https://ultralytics.com/images/bus.jpg'
+
+  test:predict:youtube:
+    cmds:
+      - yolo predict model=models/yolov8n-seg.pt source='https://youtu.be/Zgi9g1ksQHc' imgsz=320 show=True
+
+  test:train:
+    cmds:
+      - yolo train data=coco8.yaml model=models/yolov8n.pt epochs=1 lr0=0.01
+      # - mkdir -p checkpoints
+      # - rm -fR checkpoints/test1
+      # - python yololab/yololab/experiments/train.py test1
   
+
+
 
 
   export:
