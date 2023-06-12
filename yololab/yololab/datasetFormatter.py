@@ -34,7 +34,6 @@ class DatasetFormatter():
         
         if not args.image_ext:
             self.image_extension = ".png"
-        elif not args.normalize: print("Warning: --image-ext (-e) needs --normalize (-n) to work")
         else:
             if args.image_ext[0] == ".": self.image_extension = args.image_ext
             else: self.image_extension = "." + args.image_ext
