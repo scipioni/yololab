@@ -13,7 +13,7 @@ tasks:
 
   venv:windows:
     cmds:
-      - python3.10 -mvenv venv --system-site-packages
+      - python -mvenv venv --system-site-packages
       - venv/Scripts/pip.exe install --upgrade pip
       - venv/Scripts/pip.exe install -e yololab
     status:
