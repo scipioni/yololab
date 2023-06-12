@@ -2,18 +2,20 @@ import os, glob
 import argparse
 import imagesize
 from functools import partial
+
 class DatasetFormatter():
     def __init__(self):
         parser = argparse.ArgumentParser()
-        parser.add_argument('DIRECTORY', type=str)
-        parser.add_argument('-f', '--filter', required=False, action='store_true')
-        parser.add_argument('-n', '--normalize', required=False, action='store_true')
-        parser.add_argument('-t', '--threshold', type=str, required=False)
-        parser.add_argument('-e', '--image-ext', type=str, required=False)
-        parser.add_argument('-o', '--output-dir', type=str, required=False)
-        parser.add_argument('-d', '--dataset', required=False, action='store_true')
-        parser.add_argument('-a', '--angle-format', required=False, action='store_true')
-        parser.add_argument('-v', '--verbose', required=False, action='store_true')
+        parser = argparse.ArgumentParser(description='Format directory/dataset to yolo format and filter files with laying people in them.')
+        parser.add_argument('DIRECTORY', type=str, help='input directory')
+        parser.add_argument('-f', '--filter', required=False, action='store_true', help='filter mode')
+        parser.add_argument('-n', '--normalize', required=False, action='store_true', help='normalize mode')
+        parser.add_argument('-t', '--threshold', type=str, required=False, help='filter width/height ratio threshold')
+        parser.add_argument('-e', '--image-ext', type=str, required=False, help='extension of dataset images')
+        parser.add_argument('-o', '--output-dir', type=str, required=False, help='output directory')
+        parser.add_argument('-d', '--dataset', required=False, action='store_true', help='treat input directory as a dataset')
+        parser.add_argument('-a', '--angle-format', required=False, action='store_true', help='use if input txt format uses angles')
+        parser.add_argument('-v', '--verbose', required=False, action='store_true', help='show filenames that contain laying people')
         args = parser.parse_args()
         
         self.directory_path = args.DIRECTORY
