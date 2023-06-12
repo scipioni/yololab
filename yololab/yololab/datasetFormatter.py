@@ -98,9 +98,7 @@ class DatasetFormatter():
         convertedNumberList.append( numberList[4] - numberList[3])
         return convertedNumberList
     
-    def normalize_values(self, filename, numberList):
-        imageName = filename.replace(".txt", self.image_extension)
-        imageWidth, imageHeight = imagesize.get(imageName)
+    def normalize_values(self, imageWidth, imageHeight, numberList):
         numberList[1] = numberList[1] / imageWidth
         numberList[2] = numberList[2] / imageHeight
         numberList[3] = numberList[3] / imageWidth
@@ -116,6 +114,12 @@ class DatasetFormatter():
         if not directoryPath: directoryPath = self.directory_path
         layingPeopleCount = 0
         with open(os.path.join(os.getcwd(), filename), 'r') as f:
+            try:
+                imageName = filename.replace(".txt", self.image_extension)
+                imageWidth, imageHeight = imagesize.get(imageName)
+            except:
+                return False, layingPeopleCount  # return False, 0
+            
             lineList = []
             for line in f:
                 numberList = line.split()
@@ -126,7 +130,7 @@ class DatasetFormatter():
                     numberList = self.convert_to_yolo(numberList)
 
                 if self.normalize:
-                    numberList = self.normalize_values(filename, numberList)
+                    numberList = self.normalize_values(imageWidth, imageHeight, numberList)
                 
                 if self.filter:
                     if self.has_laying_person(numberList):
@@ -142,40 +146,53 @@ class DatasetFormatter():
             if layingPeopleCount == 1: print("{filename} has a laying person".format(filename = fileBaseName))
             else: print("{filename} has {count} laying people".format(filename = fileBaseName,
                                                                       count = layingPeopleCount))
-        return layingPeopleCount
+        return True, layingPeopleCount
 
     def process_directory(self, directoryPath = None):
         if not directoryPath: directoryPath = self.directory_path
+        totalProcessedFiles = 0
         totalLayingPeopleCount = 0
         for filename in glob.glob(directoryPath + '/*.txt'):
-            fileLayingPeopleCount = self.process_file(filename, directoryPath)
+            processedFile, fileLayingPeopleCount = self.process_file(filename, directoryPath)
+            if processedFile: totalProcessedFiles += 1
             totalLayingPeopleCount += fileLayingPeopleCount
-        if self.filter:
-            print("{directory} has {count} laying people".format(directory = directoryPath,
-                                                                 count = totalLayingPeopleCount))
-        return totalLayingPeopleCount
+
+        return totalProcessedFiles, totalLayingPeopleCount
 
     def process_dataset(self):
         print("Processing training directory...")
-        trainLayingPeopleCount = self.process_directory(self.directory_path + '/archive/dataset/person/train-coco')
+        trainProcessedFiles, trainLayingPeopleCount = self.process_directory(self.directory_path + '/archive/dataset/person/train-coco')
+        if self.filter:
+            print("{directory} has {count} laying people.".format(directory = 'train-coco',
+                                                                 count = trainLayingPeopleCount))
         print("train-coco Done!")
 
         print("Processing testing directory...")
-        testLayingPeopleCount = self.process_directory(self.directory_path + '/archive/dataset/person/test-coco')
+        testProcessedFiles, testLayingPeopleCount = self.process_directory(self.directory_path + '/archive/dataset/person/test-coco')
+        if self.filter:
+            print("{directory} has {count} laying people.".format(directory = 'test-coco',
+                                                                 count = testLayingPeopleCount))
         print("test-coco Done!")
 
-        if self.filter:
-            print("The dataset has {count} laying people".format(count = trainLayingPeopleCount + testLayingPeopleCount))
+        totalProcessedFiles = trainProcessedFiles + testProcessedFiles
+        totalLayingPeople = trainLayingPeopleCount + testLayingPeopleCount
+        return totalProcessedFiles, totalLayingPeople
 
 def main():
     formatter = DatasetFormatter()
+    totalProcessedFiles = 0
+    totalLayingPeople = 0
     if formatter.working_on_dataset:
         formatter.create_dataset_tree()
-        formatter.process_dataset()
+        totalProcessedFiles, totalLayingPeople = formatter.process_dataset()
     else:
         formatter.create_output_directory()
         print("Processing directory...")
-        formatter.process_directory()
+        totalProcessedFiles, totalLayingPeople = formatter.process_directory()
+
+    if formatter.filter:
+        print("Found {count} laying people.".format(count = totalLayingPeople))
+    print("Processed {processedCount} files.".format(processedCount = totalProcessedFiles))
     print("All Done!")
 
 if __name__ == '__main__':
