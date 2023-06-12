@@ -6,6 +6,7 @@ https://github.com/ultralytics/ultralytics
 ## prereq
 
 - python >= 3.9
+- wget
 - taskfile https://taskfile.dev
 
 for CUDA suppor on arch
