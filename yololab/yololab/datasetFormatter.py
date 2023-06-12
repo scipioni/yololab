@@ -12,8 +12,7 @@ class DatasetFormatter():
         parser.add_argument('-n', '--normalize', required=False, action='store_true', help='normalize mode')
         parser.add_argument('-t', '--threshold', type=str, required=False, help='filter width/height ratio threshold - default: 2')
         parser.add_argument('-e', '--image-ext', type=str, required=False, help='extension of dataset images - default: .png')
-        parser.add_argument('-o', '--output-dir', type=str, required=False, help='output directory - default: ./formatted_output')
-        parser.add_argument('-d', '--dataset', required=False, action='store_true', help='treat input directory as a dataset')
+        parser.add_argument('-r', '--recursive', required=False, action='store_true', help='treat input directory as a dataset, recursively processing all subdirectories')
         parser.add_argument('-a', '--angle-format', required=False, action='store_true', help='use if input txt format uses angles')
         parser.add_argument('-v', '--verbose', required=False, action='store_true', help='show filenames that contain laying people')
         args = parser.parse_args()
@@ -43,27 +42,11 @@ class DatasetFormatter():
         if not args.angle_format: self.angle_format = False
         else: self.angle_format = True
 
-        if args.output_dir: self.output_path = args.output_dir
-        else: self.output_path = 'formatted_output'
-
         if args.verbose: self.verbose = True
         else: self.verbose = False
 
-        if args.dataset: self.working_on_dataset = True
-        else: self.working_on_dataset = False
-            
-    def create_output_directory(self):
-        makeDirectory = partial(os.makedirs, exist_ok=True)
-        makeDirectory(self.output_path)
-
-    def create_dataset_tree(self):
-        filteredDirectorylist = ('archive/dataset/person/train-coco', 
-                                'archive/dataset/person/test-coco')
-        nestedRootPath = partial(os.path.join, self.output_path)
-        makeDirectory = partial(os.makedirs, exist_ok=True)
-    
-        for pathItems in map(nestedRootPath, filteredDirectorylist):
-            makeDirectory(pathItems)
+        if args.recursive: self.recursive = True
+        else: self.recursive = False
 
     def convert_list_to_string(self, list, delimiter=""):
         string = ""
@@ -72,20 +55,8 @@ class DatasetFormatter():
         string = string[:len(string)-1]
         return string
 
-    def write_to_file(self, filename, lineList, directoryPath=None):
-        if not directoryPath: directoryPath = self.directory_path
-        filePath = ""
-        fileBaseName = os.path.basename(filename)
-
-        if self.working_on_dataset:
-            directoryList = directoryPath.split("/")
-            directoryList.pop(0)
-            formattedDirectory = self.convert_list_to_string(directoryList, "/")
-            filePath = self.output_path + "/" + formattedDirectory + "/" + fileBaseName
-        else:
-            filePath = self.output_path + "/" + fileBaseName
-        
-        with open(filePath, 'w') as fp:
+    def write_to_file(self, filename, lineList):
+        with open(filename, 'w') as fp:
             text = self.convert_list_to_string(lineList, "\n")
             fp.write(text)
 
@@ -110,8 +81,7 @@ class DatasetFormatter():
         if ratio >= self.ratio_threshold: return True
         else: return False
 
-    def process_file(self, filename, directoryPath=None):
-        if not directoryPath: directoryPath = self.directory_path
+    def process_file(self, filename):
         layingPeopleCount = 0
         with open(os.path.join(os.getcwd(), filename), 'r') as f:
             try:
@@ -139,7 +109,7 @@ class DatasetFormatter():
                 
                 lineList.append(self.convert_list_to_string(numberList, " "))
             
-            self.write_to_file(filename, lineList, directoryPath)
+            self.write_to_file(filename, lineList)
         
         if self.verbose and self.filter and layingPeopleCount > 0: 
             fileBaseName = os.path.basename(filename)
@@ -148,45 +118,44 @@ class DatasetFormatter():
                                                                       count = layingPeopleCount))
         return True, layingPeopleCount
 
-    def process_directory(self, directoryPath = None):
+    def process_directory(self, directoryPath=None):
         if not directoryPath: directoryPath = self.directory_path
         totalProcessedFiles = 0
         totalLayingPeopleCount = 0
         for filename in glob.glob(directoryPath + '/*.txt'):
-            processedFile, fileLayingPeopleCount = self.process_file(filename, directoryPath)
+            processedFile, fileLayingPeopleCount = self.process_file(filename)
             if processedFile: totalProcessedFiles += 1
             totalLayingPeopleCount += fileLayingPeopleCount
 
         return totalProcessedFiles, totalLayingPeopleCount
 
-    def process_dataset(self):
-        print("Processing training directory...")
-        trainProcessedFiles, trainLayingPeopleCount = self.process_directory(self.directory_path + '/archive/dataset/person/train-coco')
+    def process_directories_recursively(self, directoryPath=None):
+        if not directoryPath: directoryPath = self.directory_path
+        totalProcessedFiles = 0
+        totalLayingPeopleCount = 0
+        for path in glob.glob(directoryPath + '/*'):
+            if os.path.isdir(path):
+                print("Processing {path}...".format(path = path.replace('\\', '/')))
+                processedFiles, layingPeople = self.process_directories_recursively(path)
+                totalProcessedFiles += processedFiles
+                totalLayingPeopleCount += layingPeople
+            elif path.endswith('.txt'):
+                processedFile, fileLayingPeopleCount = self.process_file(path)
+                if processedFile: totalProcessedFiles += 1
+                totalLayingPeopleCount += fileLayingPeopleCount
         if self.filter:
-            print("{directory} has {count} laying people.".format(directory = 'train-coco',
-                                                                 count = trainLayingPeopleCount))
-        print("train-coco Done!")
-
-        print("Processing testing directory...")
-        testProcessedFiles, testLayingPeopleCount = self.process_directory(self.directory_path + '/archive/dataset/person/test-coco')
-        if self.filter:
-            print("{directory} has {count} laying people.".format(directory = 'test-coco',
-                                                                 count = testLayingPeopleCount))
-        print("test-coco Done!")
-
-        totalProcessedFiles = trainProcessedFiles + testProcessedFiles
-        totalLayingPeople = trainLayingPeopleCount + testLayingPeopleCount
-        return totalProcessedFiles, totalLayingPeople
+            print("{path} has {count} laying people.".format(path = path.replace('\\', '/'),
+                                                             count = totalLayingPeopleCount))
+        return totalProcessedFiles, totalLayingPeopleCount
 
 def main():
     formatter = DatasetFormatter()
     totalProcessedFiles = 0
     totalLayingPeople = 0
-    if formatter.working_on_dataset:
-        formatter.create_dataset_tree()
-        totalProcessedFiles, totalLayingPeople = formatter.process_dataset()
+    if formatter.recursive:
+        print("Processing dataset...")
+        totalProcessedFiles, totalLayingPeople = formatter.process_directories_recursively()
     else:
-        formatter.create_output_directory()
         print("Processing directory...")
         totalProcessedFiles, totalLayingPeople = formatter.process_directory()
 
