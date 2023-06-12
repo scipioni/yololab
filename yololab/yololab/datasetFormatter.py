@@ -10,10 +10,10 @@ class DatasetFormatter():
         parser.add_argument('DIRECTORY', type=str, help='input directory')
         parser.add_argument('-f', '--filter', required=False, action='store_true', help='filter mode')
         parser.add_argument('-n', '--normalize', required=False, action='store_true', help='normalize mode')
-        parser.add_argument('-t', '--threshold', type=str, required=False, help='filter width/height ratio threshold - default: 2')
         parser.add_argument('-e', '--image-ext', type=str, required=False, help='extension of dataset images - default: .png')
-        parser.add_argument('-r', '--recursive', required=False, action='store_true', help='treat input directory as a dataset, recursively processing all subdirectories')
+        parser.add_argument('-t', '--threshold', type=str, required=False, help='filter width/height ratio threshold - default: 2')
         parser.add_argument('-a', '--angle-format', required=False, action='store_true', help='use if input txt format uses angles')
+        parser.add_argument('-r', '--recursive', required=False, action='store_true', help='treat input directory as a dataset, recursively processing all subdirectories')
         parser.add_argument('-v', '--verbose', required=False, action='store_true', help='show filenames that contain laying people')
         args = parser.parse_args()
         
