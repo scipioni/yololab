@@ -5,17 +5,19 @@ from functools import partial
 class DatasetFormatter():
     def __init__(self):
         parser = argparse.ArgumentParser()
-        parser.add_argument('--filter', required=False, action='store_true')
-        parser.add_argument('--normalize', required=False, action='store_true')
-        parser.add_argument('--dir', type=str, required=True)
-        parser.add_argument('--threshold', type=str, required=False)
-        parser.add_argument('--image-ext', type=str, required=False)
-        parser.add_argument('--output-dir', type=str, required=False)
-        parser.add_argument('--dataset', required=False, action='store_true')
-        parser.add_argument('--angle-format', required=False, action='store_true')
-        parser.add_argument('--verbose', required=False, action='store_true')
+        parser.add_argument('DIRECTORY', type=str)
+        parser.add_argument('-f', '--filter', required=False, action='store_true')
+        parser.add_argument('-n', '--normalize', required=False, action='store_true')
+        parser.add_argument('-t', '--threshold', type=str, required=False)
+        parser.add_argument('-e', '--image-ext', type=str, required=False)
+        parser.add_argument('-o', '--output-dir', type=str, required=False)
+        parser.add_argument('-d', '--dataset', required=False, action='store_true')
+        parser.add_argument('-a', '--angle-format', required=False, action='store_true')
+        parser.add_argument('-v', '--verbose', required=False, action='store_true')
         args = parser.parse_args()
         
+        self.directory_path = args.DIRECTORY
+
         self.filter = False
         self.normalize = False
         if args.filter:
@@ -23,17 +25,15 @@ class DatasetFormatter():
             if args.normalize: self.normalize = True
         elif args.normalize:
             self.normalize = True
-        else: parser.error("At least one of --filter and --normalize required")
-
-        self.directory_path = args.dir
+        else: parser.error("At least one of --filter (-f) and --normalize (-n) required")
 
         if not args.threshold: self.ratio_threshold = 2
-        elif not args.filter: print("Warning: --threshold needs --filter to work")
+        elif not args.filter: print("Warning: --threshold (-t) needs --filter (-f) to work")
         else: self.ratio_threshold = args.threshold
         
         if not args.image_ext:
             self.image_extension = "jpg"
-        elif not args.normalize: print("Warning: --image-ext needs --normalize to work")
+        elif not args.normalize: print("Warning: --image-ext (-e) needs --normalize (-n) to work")
         else: self.image_extension = args.image_ext
 
         if not args.angle_format: self.angle_format = False
@@ -140,8 +140,6 @@ class DatasetFormatter():
         return totalLayingPeopleCount
 
     def process_dataset(self):
-        
-
         print("Processing training directory...")
         trainLayingPeopleCount = self.process_directory(self.directory_path + '/archive/dataset/person/train-coco')
         print("train-coco Done!")
