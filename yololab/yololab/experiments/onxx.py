@@ -3,10 +3,10 @@ import argparse
 import cv2.dnn
 import numpy as np
 
-from ultralytics.yolo.utils import ROOT, yaml_load
-from ultralytics.yolo.utils.checks import check_yaml
+#from ultralytics.yolo.utils import ROOT, yaml_load
+#from ultralytics.yolo.utils.checks import check_yaml
 
-CLASSES = yaml_load(check_yaml('coco128.yaml'))['names']
+CLASSES = {0:"up", 1:"down"} #yaml_load(check_yaml('coco128.yaml'))['names']
 
 colors = np.random.uniform(0, 255, size=(len(CLASSES), 3))
 
@@ -19,7 +19,14 @@ def draw_bounding_box(img, class_id, confidence, x, y, x_plus_w, y_plus_h):
 
 
 def main(onnx_model, input_image):
+    import onnx
+
+    onnx_model = onnx.load(onnx_model)
+    onnx.checker.check_model(onnx_model)
+    #return
+
     model: cv2.dnn.Net = cv2.dnn.readNetFromONNX(onnx_model)
+    return
     original_image: np.ndarray = cv2.imread(input_image)
     [height, width, _] = original_image.shape
     length = max((height, width))
@@ -74,7 +81,7 @@ def main(onnx_model, input_image):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--model', default='yolov8n.onnx', help='Input your onnx model.')
-    parser.add_argument('--img', default=str(ROOT / 'assets/bus.jpg'), help='Path to input image.')
+    parser.add_argument('--model', default='models/yolo_nas_s_640.onnx', help='Input your onnx model.')
+    parser.add_argument('--img', default="datasets/fpds/test/split4/split4_051.png", help='Path to input image.')
     args = parser.parse_args()
     main(args.model, args.img)

@@ -1,4 +1,4 @@
-jupyterlab==4.0.0
+jupyterlab>=4.0.0
 #jupyterlab-drawio
 #jupyterlab-spreadsheet-editor
 #jupyterlab-topbar

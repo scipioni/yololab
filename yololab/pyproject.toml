@@ -7,13 +7,16 @@ authors = [
 ]
 dependencies = [
     "configargparse>=1.5.3",
-    "ultralytics>=8.0.101",
-    "shared-ndarray2>=1.0.0.post0",
+    "ultralytics>=8.0.115",
+    #"shared-ndarray2>=1.0.0.post0",
     "ipython>=8.13.2",
-    "deep-sort-realtime>=1.3.2",
-    "super-gradients>=3.1.1",
+    #"deep-sort-realtime>=1.3.2",
+    #"super-gradients>=3.1.2",
+    "pascal-voc>=0.0.7",
+    "imagesize>=1.4.1",
+    "torchinfo>=1.8.0",
 ]
-requires-python = ">=3.9,<3.11"
+requires-python = ">=3.9"
 readme = "README.md"
 license = {text = "MIT"}
 
@@ -24,3 +27,4 @@ build-backend = "pdm.backend"
 
 [project.scripts]
 grabber = "yololab.main:main"
+fpds2voc = "yololab.utils.fpds:main"

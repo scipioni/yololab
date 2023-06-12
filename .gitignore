@@ -5,3 +5,5 @@
 *.pt
 models
 notebooks
+checkpoints
+/build
