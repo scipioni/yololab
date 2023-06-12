@@ -72,14 +72,15 @@ tasks:
     cmds:
       - yolo predict model=models/yolov8n-seg.pt source='https://youtu.be/Zgi9g1ksQHc' imgsz=320 show=True
 
-  test:train:
-    cmds:
-      - yolo train data=coco8.yaml model=models/yolov8n.pt epochs=1 lr0=0.01
-      # - mkdir -p checkpoints
-      # - rm -fR checkpoints/test1
-      # - python yololab/yololab/experiments/train.py test1
+  # test:train:
+  #   cmds:
+  #     - |
+  #       # https://docs.ultralytics.com/usage/cfg/
+  #       yolo train data=coco8.yaml model=models/yolov8n.pt epochs=1 lr0=0.01 
+  #     # - mkdir -p checkpoints
+  #     # - rm -fR checkpoints/test1
+  #     # - python yololab/yololab/experiments/train.py test1
   
-
 
 
 
@@ -101,6 +102,14 @@ tasks:
   test:deepsort:
     cmds:
       - python yololab/yololab/experiments/deepsort.py
+  
+  test:train:
+    cmds:
+      - |
+        # https://docs.ultralytics.com/usage/cfg/
+        export YOLO_CONFIG_DIR=~/.config/Ultralytics/
+        yolo detect train project=models name=fpds data=datasets/fpds.yaml model=models/yolov8n.pt pretrained=true imgsz=640 epochs=1 lr0=0.01
+        yolo export model=models/fpds/weights/best.pt imgsz=640 format=onnx opset=12
     
   test:onxx:
     cmds:

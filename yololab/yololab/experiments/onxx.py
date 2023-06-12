@@ -9,7 +9,7 @@ import numpy as np
 
 CLASSES = {0:"up", 1:"down"} #yaml_load(check_yaml('coco128.yaml'))['names']
 
-colors = np.random.uniform(0, 255, size=(max(len(CLASSES),80), 3))
+colors = np.random.uniform(0, 255, size=(max  (len(CLASSES),80), 3))
 
 
 def draw_bounding_box(img, class_id, confidence, x, y, x_plus_w, y_plus_h):
