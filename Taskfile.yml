@@ -64,6 +64,7 @@ tasks:
         tar xvf train.tar* && rm train.tar*
         wget --content-disposition "https://universidaddealcala-my.sharepoint.com/:u:/g/personal/gram_uah_es/EULm_4e4bgBKqnsTxDB5Br4BKf9rApBjYi7T0QrWyJrppw??&Download=1"
         tar xvf valid.tar* && rm valid.tar* 
+        python yololab/yololab/utils/fpds.py datasets/fpds/
     status:
       - test -f datasets/fpds/test/split6/split6_002.txt
 
