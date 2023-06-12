@@ -28,7 +28,7 @@ class DatasetFormatter():
         self.directory_path = args.dir
 
         if not args.threshold: self.ratio_threshold = 2
-        elif not args.filter: print("Warning: --threshold needs --filter to work", Warning)
+        elif not args.filter: print("Warning: --threshold needs --filter to work")
         else: self.ratio_threshold = args.threshold
         
         if not args.image_ext:
@@ -45,17 +45,9 @@ class DatasetFormatter():
         if args.verbose: self.verbose = True
         else: self.verbose = False
 
-        if args.dataset:
-            self.working_on_dataset = True
-            self.create_dataset_tree()
-            self.process_dataset()
-        else:
-            self.working_on_dataset = False
-            self.create_output_directory()
-            print("Processing directory...")
-            self.process_directory()
-            print("Done!")
-
+        if args.dataset: self.working_on_dataset = True
+        else: self.working_on_dataset = False
+            
     def create_output_directory(self):
         makeDirectory = partial(os.makedirs, exist_ok=True)
         makeDirectory(self.output_path)
@@ -160,7 +152,14 @@ class DatasetFormatter():
 
         if self.filter:
             print("The dataset has {count} laying people".format(count = trainLayingPeopleCount + testLayingPeopleCount))
-        print("All Done!")
 
 if __name__ == '__main__':
     formatter = DatasetFormatter()
+    if formatter.working_on_dataset:
+        formatter.create_dataset_tree()
+        formatter.process_dataset()
+    else:
+        formatter.create_output_directory()
+        print("Processing directory...")
+        formatter.process_directory()
+    print("All Done!")
