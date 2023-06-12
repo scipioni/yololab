@@ -21,7 +21,7 @@ class Convert:
             for row in f.readlines():
                 try:
                     box = [int(s.strip()) for s in row.split(" ")]
-                except:  # già convertito perché trovo dei float
+                except:  # già convertito perché trovo delle stringhe float
                     return
 
                 objs.append(
