@@ -15,6 +15,7 @@ dependencies = [
     "pascal-voc>=0.0.7",
     "imagesize>=1.4.1",
     "torchinfo>=1.8.0",
+    "onnx>=1.14.0",
 ]
 requires-python = ">=3.9"
 readme = "README.md"
