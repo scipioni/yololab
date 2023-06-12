@@ -87,6 +87,29 @@ class DatasetFormatter():
             text = self.convert_list_to_string(lineList, "\n")
             fp.write(text)
 
+    def convert_to_yolo(self, numberList):
+        convertedNumberList = []
+        convertedNumberList.append( numberList[0] )
+        convertedNumberList.append( (numberList[1] + numberList[2]) / 2 )
+        convertedNumberList.append( (numberList[3] + numberList[4]) / 2 )
+        convertedNumberList.append( numberList[2] - numberList[1] )
+        convertedNumberList.append( numberList[4] - numberList[3])
+        return convertedNumberList
+    
+    def normalize_values(self, filename, numberList):
+        imageName = filename[:len(filename)-3] + self.image_extension
+        imageWidth, imageHeight = imagesize.get(imageName)
+        numberList[1] = numberList[1] / imageWidth
+        numberList[2] = numberList[2] / imageHeight
+        numberList[3] = numberList[3] / imageWidth
+        numberList[4] = numberList[4] / imageHeight
+        return numberList
+
+    def has_laying_person(self, numberList) -> bool:
+        ratio = numberList[3] / numberList[4]
+        if ratio >= self.ratio_threshold: return True
+        else: return False
+
     def process_file(self, filename, directoryPath=None):
         if not directoryPath: directoryPath = self.directory_path
         layingPeopleCount = 0
@@ -98,31 +121,20 @@ class DatasetFormatter():
                     if i != 0: numberList[i] = float(numberList[i])
                 
                 if self.angle_format:
-                    convertedNumberList = []
-                    convertedNumberList.append( numberList[0] )
-                    convertedNumberList.append( (numberList[1] + numberList[2]) / 2 )
-                    convertedNumberList.append( (numberList[3] + numberList[4]) / 2 )
-                    convertedNumberList.append( numberList[2] - numberList[1] )
-                    convertedNumberList.append( numberList[4] - numberList[3])
-                    numberList = convertedNumberList
+                    numberList = self.convert_to_yolo(numberList)
 
                 if self.normalize:
-                    imageName = filename[:len(filename)-3] + self.image_extension
-                    imageWidth, imageHeight = imagesize.get(imageName)
-                    numberList[1] = numberList[1] / imageWidth
-                    numberList[2] = numberList[2] / imageHeight
-                    numberList[3] = numberList[3] / imageWidth
-                    numberList[4] = numberList[4] / imageHeight
+                    numberList = self.normalize_values(filename, numberList)
                 
                 if self.filter:
-                    ratio = numberList[3] / numberList[4]
-                    if ratio >= self.ratio_threshold:
+                    if self.has_laying_person(numberList):
                         numberList[0] = '1'
                         layingPeopleCount += 1
                 
                 lineList.append(self.convert_list_to_string(numberList, " "))
             
             self.write_to_file(filename, lineList, directoryPath)
+        
         if self.verbose and self.filter and layingPeopleCount > 0: 
             fileBaseName = os.path.basename(filename)
             if layingPeopleCount == 1: print("{filename} has a laying person".format(filename = fileBaseName))
@@ -153,7 +165,7 @@ class DatasetFormatter():
         if self.filter:
             print("The dataset has {count} laying people".format(count = trainLayingPeopleCount + testLayingPeopleCount))
 
-if __name__ == '__main__':
+def main():
     formatter = DatasetFormatter()
     if formatter.working_on_dataset:
         formatter.create_dataset_tree()
@@ -163,3 +175,6 @@ if __name__ == '__main__':
         print("Processing directory...")
         formatter.process_directory()
     print("All Done!")
+
+if __name__ == '__main__':
+    main()

@@ -43,6 +43,11 @@ class Convert:
             os.remove(str(filename))
             return
 
+        for value in box[1:]:
+            if value < 0 or value > max(w, h):
+                os.remove(filename)
+                os.remove(fileimg)
+
         # save pascal voc
         pascal_ann = PascalVOC(filename.name, size=size_block(w, h, 3), objects=objs)
         filexml = str(filename).replace(".txt", ".xml")
