@@ -1,8 +1,8 @@
 import os, glob
 import argparse
 import imagesize
+import warnings
 from functools import partial
-
 class DatasetFormatter():
     def __init__(self):
         parser = argparse.ArgumentParser()
@@ -12,7 +12,7 @@ class DatasetFormatter():
         parser.add_argument('--threshold', type=str, required=False)
         parser.add_argument('--image-ext', type=str, required=False)
         parser.add_argument('--output-dir', type=str, required=False)
-        parser.add_argument('--database', required=False, action='store_true')
+        parser.add_argument('--dataset', required=False, action='store_true')
         parser.add_argument('--angle-format', required=False, action='store_true')
         parser.add_argument('--verbose', required=False, action='store_true')
         args = parser.parse_args()
@@ -29,7 +29,7 @@ class DatasetFormatter():
         self.DIRECTORY_PATH = args.dir
 
         if not args.threshold: self.RATIO_THRESHOLD = 2
-        elif not args.filter: parser.error("--threshold needs --filter to work")
+        elif not args.filter: warnings.warn("--threshold needs --filter to work", Warning)
         else: self.RATIO_THRESHOLD = args.threshold
         
         if not args.image_ext:
@@ -46,12 +46,12 @@ class DatasetFormatter():
         if args.verbose: self.VERBOSE = True
         else: self.VERBOSE = False
 
-        if args.database:
-            self.WORKING_ON_DATABASE = True
-            self.create_database_tree()
-            self.process_database()
+        if args.dataset:
+            self.WORKING_ON_DATASET = True
+            self.create_dataset_tree()
+            self.process_dataset()
         else:
-            self.WORKING_ON_DATABASE = False
+            self.WORKING_ON_DATASET = False
             self.create_output_directory()
             print("Processing directory...")
             self.process_directory()
@@ -61,7 +61,7 @@ class DatasetFormatter():
         makeDirectory = partial(os.makedirs, exist_ok=True)
         makeDirectory(self.OUTPUT_PATH)
 
-    def create_database_tree(self):
+    def create_dataset_tree(self):
         filteredDirectorylist = ('archive/dataset/person/train-coco', 
                                 'archive/dataset/person/test-coco')
         nestedRootPath = partial(os.path.join, self.OUTPUT_PATH)
@@ -82,7 +82,7 @@ class DatasetFormatter():
         filePath = ""
         fileBaseName = os.path.basename(filename)
 
-        if self.WORKING_ON_DATABASE:
+        if self.WORKING_ON_DATASET:
             directoryList = directoryPath.split("/")
             directoryList.pop(0)
             formattedDirectory = self.convert_list_to_string(directoryList, "/")
@@ -148,7 +148,7 @@ class DatasetFormatter():
                                                                  count = totalLayingPeopleCount))
         return totalLayingPeopleCount
 
-    def process_database(self):
+    def process_dataset(self):
         print("Processing training directory...")
         trainLayingPeopleCount = self.process_directory(self.DIRECTORY_PATH + '/archive/dataset/person/train-coco')
         print("train-coco Done!")
@@ -158,7 +158,7 @@ class DatasetFormatter():
         print("test-coco Done!")
 
         if self.FILTER:
-            print("The database has {count} laying people".format(count = trainLayingPeopleCount + testLayingPeopleCount))
+            print("The dataset has {count} laying people".format(count = trainLayingPeopleCount + testLayingPeopleCount))
         print("All Done!")
 
 if __name__ == '__main__':
