@@ -1,7 +1,6 @@
 import os, glob
 import argparse
 import imagesize
-import warnings
 from functools import partial
 class DatasetFormatter():
     def __init__(self):
@@ -29,12 +28,12 @@ class DatasetFormatter():
         self.DIRECTORY_PATH = args.dir
 
         if not args.threshold: self.RATIO_THRESHOLD = 2
-        elif not args.filter: warnings.warn("--threshold needs --filter to work", Warning)
+        elif not args.filter: print("Warning: --threshold needs --filter to work", Warning)
         else: self.RATIO_THRESHOLD = args.threshold
         
         if not args.image_ext:
             self.IMAGE_EXTENSION = "jpg"
-        elif not args.normalize: parser.error("--image-ext needs --normalize to work")
+        elif not args.normalize: print("Warning: --image-ext needs --normalize to work")
         else: self.IMAGE_EXTENSION = args.image_ext
 
         if not args.angle_format: self.ANGLE_FORMAT = False
@@ -149,6 +148,8 @@ class DatasetFormatter():
         return totalLayingPeopleCount
 
     def process_dataset(self):
+        
+
         print("Processing training directory...")
         trainLayingPeopleCount = self.process_directory(self.DIRECTORY_PATH + '/archive/dataset/person/train-coco')
         print("train-coco Done!")
