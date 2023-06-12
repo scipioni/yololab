@@ -6,7 +6,7 @@ from functools import partial
 class DatasetFormatter():
     def __init__(self):
         parser = argparse.ArgumentParser()
-        parser = argparse.ArgumentParser(description='Format directory/dataset to yolo format and filter files with laying people in them.')
+        parser = argparse.ArgumentParser(description='Format directory of dataset to yolo format and filter files with laying people in them.')
         parser.add_argument('DIRECTORY', type=str, help='input directory')
         parser.add_argument('-f', '--filter', required=False, action='store_true', help='filter mode')
         parser.add_argument('-n', '--normalize', required=False, action='store_true', help='normalize mode')
