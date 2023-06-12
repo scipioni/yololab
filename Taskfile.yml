@@ -108,11 +108,18 @@ tasks:
       - |
         # https://docs.ultralytics.com/usage/cfg/
         export YOLO_CONFIG_DIR=~/.config/Ultralytics/
-        yolo detect train project=models name=fpds data=datasets/fpds.yaml model=models/yolov8n.pt pretrained=true imgsz=640 epochs=1 lr0=0.01
+        yolo detect train project=models name=fpds data=datasets/fpds.yaml model=models/yolov8n.pt pretrained=true exist_ok=true imgsz=640 epochs=5 lr0=0.01
         yolo export model=models/fpds/weights/best.pt imgsz=640 format=onnx opset=12
     
+
+  test:opencv:
+    cmds:
+      - python yololab/yololab/experiments/onxx.py --model models/fpds/weights/best.onnx --img samples/fp1.png
+
+
   test:onxx:
     cmds:
+      - yolo export model=models/yolov8n.pt imgsz=640 format=onnx opset=12
       - python yololab/yololab/experiments/onxx.py --model models/yolov8n.onnx --img samples/dogs.webp
 
 
