@@ -10,9 +10,9 @@ class DatasetFormatter():
         parser.add_argument('DIRECTORY', type=str, help='input directory')
         parser.add_argument('-f', '--filter', required=False, action='store_true', help='filter mode')
         parser.add_argument('-n', '--normalize', required=False, action='store_true', help='normalize mode')
-        parser.add_argument('-t', '--threshold', type=str, required=False, help='filter width/height ratio threshold')
-        parser.add_argument('-e', '--image-ext', type=str, required=False, help='extension of dataset images')
-        parser.add_argument('-o', '--output-dir', type=str, required=False, help='output directory')
+        parser.add_argument('-t', '--threshold', type=str, required=False, help='filter width/height ratio threshold - default: 2')
+        parser.add_argument('-e', '--image-ext', type=str, required=False, help='extension of dataset images - default: .png')
+        parser.add_argument('-o', '--output-dir', type=str, required=False, help='output directory - default: ./formatted_output')
         parser.add_argument('-d', '--dataset', required=False, action='store_true', help='treat input directory as a dataset')
         parser.add_argument('-a', '--angle-format', required=False, action='store_true', help='use if input txt format uses angles')
         parser.add_argument('-v', '--verbose', required=False, action='store_true', help='show filenames that contain laying people')
@@ -34,9 +34,11 @@ class DatasetFormatter():
         else: self.ratio_threshold = args.threshold
         
         if not args.image_ext:
-            self.image_extension = "jpg"
+            self.image_extension = ".png"
         elif not args.normalize: print("Warning: --image-ext (-e) needs --normalize (-n) to work")
-        else: self.image_extension = args.image_ext
+        else:
+            if args.image_ext[0] == ".": self.image_extension = args.image_ext
+            else: self.image_extension = "." + args.image_ext
 
         if not args.angle_format: self.angle_format = False
         else: self.angle_format = True
@@ -97,7 +99,7 @@ class DatasetFormatter():
         return convertedNumberList
     
     def normalize_values(self, filename, numberList):
-        imageName = filename[:len(filename)-3] + self.image_extension
+        imageName = filename.replace(".txt", self.image_extension)
         imageWidth, imageHeight = imagesize.get(imageName)
         numberList[1] = numberList[1] / imageWidth
         numberList[2] = numberList[2] / imageHeight
