@@ -126,7 +126,6 @@ class DatasetFormatter():
             processedFile, fileLayingPeopleCount = self.process_file(filename)
             if processedFile: totalProcessedFiles += 1
             totalLayingPeopleCount += fileLayingPeopleCount
-
         return totalProcessedFiles, totalLayingPeopleCount
 
     def process_directories_recursively(self, directoryPath=None):
@@ -143,8 +142,8 @@ class DatasetFormatter():
                 processedFile, fileLayingPeopleCount = self.process_file(path)
                 if processedFile: totalProcessedFiles += 1
                 totalLayingPeopleCount += fileLayingPeopleCount
-        if self.filter:
-            print("{path} has {count} laying people.".format(path = path.replace('\\', '/'),
+        if self.filter and directoryPath != self.directory_path:
+            print("{path} has {count} laying people.".format(path = directoryPath.replace('\\', '/'),
                                                              count = totalLayingPeopleCount))
         return totalProcessedFiles, totalLayingPeopleCount
 
@@ -160,7 +159,8 @@ def main():
         totalProcessedFiles, totalLayingPeople = formatter.process_directory()
 
     if formatter.filter:
-        print("Found {count} laying people.".format(count = totalLayingPeople))
+        print("Found {count} laying people in {path}.".format(count = totalLayingPeople,
+                                                              path = formatter.directory_path))
     print("Processed {processedCount} files.".format(processedCount = totalProcessedFiles))
     print("All Done!")
 
