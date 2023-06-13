@@ -1,5 +1,4 @@
 import argparse
-import onnx
 
 import cv2.dnn
 import numpy as np
@@ -9,22 +8,29 @@ import numpy as np
 
 CLASSES = {0:"up", 1:"down"} #yaml_load(check_yaml('coco128.yaml'))['names']
 
-colors = np.random.uniform(0, 255, size=(max(len(CLASSES),80), 3))
+colors = np.random.uniform(0, 255, size=(len(CLASSES), 3))
 
 
 def draw_bounding_box(img, class_id, confidence, x, y, x_plus_w, y_plus_h):
-    label = f'{CLASSES.get(class_id, "noname")} ({confidence:.2f})'
+    label = f'{CLASSES[class_id]} ({confidence:.2f})'
     color = colors[class_id]
     cv2.rectangle(img, (x, y), (x_plus_w, y_plus_h), color, 2)
     cv2.putText(img, label, (x - 10, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
+    
 
 
 def main(onnx_model, input_image):
+    import onnx
 
-    #onnx_model = onnx.load(onnx_model)
-    #onnx.checker.check_model(onnx_model)
+    onnx_model = onnx.load(onnx_model)
 
-    model: cv2.dnn.Net = cv2.dnn.readNetFromONNX(str(onnx_model))
+    onnx.checker.check_model(onnx_model)
+    #return
+
+    model: cv2.dnn.Net = cv2.dnn.readNetFromONNX(onnx_model)
+
+    
+    #return
     original_image: np.ndarray = cv2.imread(input_image)
     [height, width, _] = original_image.shape
     length = max((height, width))
@@ -62,7 +68,7 @@ def main(onnx_model, input_image):
         box = boxes[index]
         detection = {
             'class_id': class_ids[index],
-            'class_name': CLASSES.get(class_ids[index], "noname"),
+            'class_name': CLASSES[class_ids[index]],
             'confidence': scores[index],
             'box': box,
             'scale': scale}
@@ -78,8 +84,9 @@ def main(onnx_model, input_image):
 
 
 if __name__ == '__main__':
+    
     parser = argparse.ArgumentParser()
-    parser.add_argument('--model', default='models/yolo_nas_s_640.onnx', help='Input your onnx model.')
-    parser.add_argument('--img', default="datasets/fpds/test/split4/split4_051.png", help='Path to input image.')
+    parser.add_argument('--model', default=str("C:/Users/CJ/Downloads/Best.onnx"), help='Input your onnx model.')
+    parser.add_argument('--img', default=str("C:/Users/CJ/Desktop/cdataset/train/images/000000000036.jpg"), help='Path to input image.')
     args = parser.parse_args()
     main(args.model, args.img)
