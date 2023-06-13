@@ -79,7 +79,7 @@ def main(onnx_model, input_image):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--model', default='models/yolo_nas_s_640.onnx', help='Input your onnx model.')
-    parser.add_argument('--img', default="datasets/fpds/test/split4/split4_051.png", help='Path to input image.')
+    parser.add_argument('--model', default='C:/Users/CJ/Downloads/best.onnx', help='Input your onnx model.')
+    parser.add_argument('--img', default="C:/Users/CJ/Downloads/photo_5764614575826779824_y.jpg", help='Path to input image.')
     args = parser.parse_args()
     main(args.model, args.img)
