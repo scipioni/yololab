@@ -88,7 +88,7 @@ class DatasetFormatter():
                 for i in range(len(boundingBox)):
                     if i != 0:
                         value = float(boundingBox[i])
-                        if value < 0 or value > max(imageWidth, imageHeight):
+                        if ( value < 0 or value > max(imageWidth, imageHeight) ) and not self.angle_format:
                             if not self.safe:
                                 f.close()
                                 os.remove(filename)
