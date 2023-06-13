@@ -1,29 +1,16 @@
-
-
 import asyncio
 import logging
 
 import cv2 as cv
 
-from .utils import dnn
 from .grabber import DummyGrabber, FileGrabber, WebcamGrabber
-from .timing import timing
+from .utils import dnn
 
 log = logging.getLogger(__name__)
 
 
+async def grab(config, grabber, net):
 
-
-async def grab(config, net):
-    if config.dummy:
-        grabber = DummyGrabber(config)
-    elif config.images:
-        grabber = FileGrabber(config, config.images)
-    else:
-        grabber = WebcamGrabber(config)
-    #grabber.grey = net.channels == 1
-
-    
     while True:
         try:
             frame, filename = await grabber.get()
@@ -33,7 +20,6 @@ async def grab(config, net):
 
         if frame is None:
             break
-        #h, w = frame.shape[:2]
 
         net.predict(frame)
 
@@ -42,24 +28,36 @@ async def grab(config, net):
 
         if grabber.key == "w":
             pass
-        #if cv.waitKey(0 if config.step else 1) == ord('q'):
+
+        #cv.waitKey(0)
+        # if cv.waitKey(0 if config.step else 1) == ord('q'):
         #    break
-  
+
 
 def main():
     from .config import get_config
+
     config = get_config()
 
     if config.show_ann:
         config.show = True
 
-    net = dnn.NetYoloPose(config)
+    if "-pose" in config.model:
+        net = dnn.NetYoloPose(config)
+    else:
+        net = dnn.NetOnnx(config)
+
+    if config.dummy:
+        grabber = DummyGrabber(config)
+    elif config.images:
+        grabber = FileGrabber(config, config.images)
+    else:
+        grabber = WebcamGrabber(config)
 
     loop = asyncio.get_event_loop()
-    loop.run_until_complete(grab(config, net))
+    loop.run_until_complete(grab(config, grabber, net))
     loop.close()
 
 
-if __name__ == '__main__':
-    main()  
-
+if __name__ == "__main__":
+    main()
