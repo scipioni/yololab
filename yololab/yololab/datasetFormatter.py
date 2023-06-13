@@ -86,7 +86,7 @@ class DatasetFormatter():
             for line in f:
                 boundingBox = line.split()
                 for i in range(len(boundingBox)):
-                    if i != 0: 
+                    if i != 0:
                         value = float(boundingBox[i])
                         if value < 0 or value > max(imageWidth, imageHeight):
                             if not self.safe:
