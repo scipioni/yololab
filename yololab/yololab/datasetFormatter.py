@@ -14,19 +14,16 @@ class DatasetFormatter():
         parser.add_argument('-t', '--threshold', type=str, required=False, help='filter width/height ratio threshold - default: 2')
         parser.add_argument('-a', '--angle-format', required=False, action='store_true', help='use if input txt format uses angles')
         parser.add_argument('-r', '--recursive', required=False, action='store_true', help='treat input directory as a dataset, recursively processing all subdirectories')
+        parser.add_argument('-s', '--safe', required=False, action='store_true', help='don\'t delete broken images and annotations')
         parser.add_argument('-v', '--verbose', required=False, action='store_true', help='show filenames that contain laying people')
         args = parser.parse_args()
         
         self.directory_path = args.DIRECTORY
-
-        self.filter = False
-        self.normalize = False
-        if args.filter:
-            self.filter = True
-            if args.normalize: self.normalize = True
-        elif args.normalize:
-            self.normalize = True
-        else: parser.error("At least one of --filter (-f) and --normalize (-n) required")
+        
+        if not args.filter and not args.normalize:
+            parser.error("At least one of --filter (-f) and --normalize (-n) required")
+        self.filter = args.filter
+        self.normalize = args.normalize
 
         if not args.threshold: self.ratio_threshold = 2
         elif not args.filter: print("Warning: --threshold (-t) needs --filter (-f) to work")
@@ -38,14 +35,10 @@ class DatasetFormatter():
             if args.image_ext[0] == ".": self.image_extension = args.image_ext
             else: self.image_extension = "." + args.image_ext
 
-        if not args.angle_format: self.angle_format = False
-        else: self.angle_format = True
-
-        if args.verbose: self.verbose = True
-        else: self.verbose = False
-
-        if args.recursive: self.recursive = True
-        else: self.recursive = False
+        self.angle_format = args.angle_format
+        self.recursive = args.recursive
+        self.safe = args.safe
+        self.verbose = args.verbose
 
     def convert_list_to_string(self, list, delimiter=""):
         string = ""
@@ -59,24 +52,24 @@ class DatasetFormatter():
             text = self.convert_list_to_string(lineList, "\n")
             fp.write(text)
 
-    def convert_to_yolo(self, numberList):
-        convertedNumberList = []
-        convertedNumberList.append( numberList[0] )
-        convertedNumberList.append( (numberList[1] + numberList[2]) / 2 )
-        convertedNumberList.append( (numberList[3] + numberList[4]) / 2 )
-        convertedNumberList.append( numberList[2] - numberList[1] )
-        convertedNumberList.append( numberList[4] - numberList[3])
-        return convertedNumberList
+    def convert_to_yolo(self, boundingBox):
+        convertedBoundingBox = []
+        convertedBoundingBox.append( boundingBox[0] )
+        convertedBoundingBox.append( (boundingBox[1] + boundingBox[2]) / 2 )
+        convertedBoundingBox.append( (boundingBox[3] + boundingBox[4]) / 2 )
+        convertedBoundingBox.append( boundingBox[2] - boundingBox[1] )
+        convertedBoundingBox.append( boundingBox[4] - boundingBox[3])
+        return convertedBoundingBox
     
-    def normalize_values(self, imageWidth, imageHeight, numberList):
-        numberList[1] = numberList[1] / imageWidth
-        numberList[2] = numberList[2] / imageHeight
-        numberList[3] = numberList[3] / imageWidth
-        numberList[4] = numberList[4] / imageHeight
-        return numberList
+    def normalize_values(self, imageWidth, imageHeight, boundingBox):
+        boundingBox[1] = boundingBox[1] / imageWidth
+        boundingBox[2] = boundingBox[2] / imageHeight
+        boundingBox[3] = boundingBox[3] / imageWidth
+        boundingBox[4] = boundingBox[4] / imageHeight
+        return boundingBox
 
-    def has_laying_person(self, numberList) -> bool:
-        ratio = numberList[3] / numberList[4]
+    def has_laying_person(self, boundingBox) -> bool:
+        ratio = boundingBox[3] / boundingBox[4]
         if ratio >= self.ratio_threshold: return True
         else: return False
 
@@ -84,29 +77,38 @@ class DatasetFormatter():
         layingPeopleCount = 0
         with open(os.path.join(os.getcwd(), filename), 'r') as f:
             try:
-                imageName = filename.replace(".txt", self.image_extension)
-                imageWidth, imageHeight = imagesize.get(imageName)
+                imagename = filename.replace(".txt", self.image_extension)
+                imageWidth, imageHeight = imagesize.get(imagename)
             except:
                 return False, layingPeopleCount  # return False, 0
             
             lineList = []
             for line in f:
-                numberList = line.split()
-                for i in range(len(numberList)):
-                    if i != 0: numberList[i] = float(numberList[i])
+                boundingBox = line.split()
+                for i in range(len(boundingBox)):
+                    if i != 0: 
+                        value = float(boundingBox[i])
+                        if value < 0 or value > max(imageWidth, imageHeight):
+                            if not self.safe:
+                                f.close()
+                                os.remove(filename)
+                                os.remove(imagename)
+                            return False, layingPeopleCount  # return False, 0
+                        else:
+                            boundingBox[i] = value
                 
                 if self.angle_format:
-                    numberList = self.convert_to_yolo(numberList)
+                    boundingBox = self.convert_to_yolo(boundingBox)
 
                 if self.normalize:
-                    numberList = self.normalize_values(imageWidth, imageHeight, numberList)
+                    boundingBox = self.normalize_values(imageWidth, imageHeight, boundingBox)
                 
                 if self.filter:
-                    if self.has_laying_person(numberList):
-                        numberList[0] = '1'
+                    if self.has_laying_person(boundingBox):
+                        boundingBox[0] = '1'
                         layingPeopleCount += 1
                 
-                lineList.append(self.convert_list_to_string(numberList, " "))
+                lineList.append(self.convert_list_to_string(boundingBox, " "))
             
             self.write_to_file(filename, lineList)
         
