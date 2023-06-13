@@ -46,14 +46,13 @@ class DatasetFormatter():
         cropWidth, cropHeight = int(self.cropped_size / 2), int(self.cropped_size / 2)
         croppedImage = image[centerY-cropHeight : centerY+cropHeight,
                              centerX-cropWidth : centerX+cropWidth]
-        print(image.shape)
-        print(croppedImage.shape)
         return croppedImage
 
     def get_crop_center(self, image, imageWidth, imageHeight, marginList):
         middleX, middleY = int(imageWidth / 2), int(imageHeight / 2)
-        centerMargines = [middleX + self.cropped_size / 2, middleX - self.cropped_size / 2,
-                          middleY + self.cropped_size / 2, middleY - self.cropped_size / 2]
+        halfCroppedSize = int(self.cropped_size / 2)
+        centerMargines = [middleX + halfCroppedSize, middleX - halfCroppedSize,
+                          middleY + halfCroppedSize, middleY - halfCroppedSize]
         fitsInMiddleMargines = True
         for i in range(4):
             if i % 2 == 0:
@@ -62,12 +61,22 @@ class DatasetFormatter():
             else:
                 if not centerMargines[i] <= marginList[i]:
                     fitsInMiddleMargines = False
-        if fitsInMiddleMargines:
-            return middleX, middleY
+        # if fitsInMiddleMargines:
+        #     return middleX, middleY
+        # else:
+        centerX = int((centerMargines[0]-centerMargines[1]) / 2)
+        centerY = int((centerMargines[1]-centerMargines[2]) / 2)
+        if halfCroppedSize <= centerX:
+            if not centerX <= imageWidth - halfCroppedSize:
+                centerX = imageWidth - halfCroppedSize
         else:
-            centerX = int((centerMargines[0]-centerMargines[1]) / 2)
-            centerY = int((centerMargines[1]-centerMargines[2]) / 2)
-            return centerX, centerY
+            centerX = halfCroppedSize
+        if halfCroppedSize <= centerY:
+            if not centerY <= imageHeight - halfCroppedSize:
+                centerY = imageHeight - halfCroppedSize
+        else:
+            centerY = halfCroppedSize
+        return centerX, centerY
     
     def get_margins(self, boundingBox, marginList):
         xM = boundingBox[1] + boundingBox[3] / 2
@@ -118,9 +127,9 @@ class DatasetFormatter():
                 boundingBox = self.to_pixels(boundingBox, imageWidth, imageHeight)
                 marginList = self.get_margins(boundingBox, marginList)
 
-            # center = self.get_crop_center(image, imageWidth, imageHeight, marginList)
-            middleX, middleY = int(imageWidth / 2), int(imageHeight / 2)
-            center = middleX, middleY
+            center = self.get_crop_center(image, imageWidth, imageHeight, marginList)
+            # middleX, middleY = int(imageWidth / 2), int(imageHeight / 2)
+            # center = middleX, middleY
             croppedImage = self.crop_image(image, imageWidth, imageHeight, center)
             cv.imshow(":[", croppedImage)
 
