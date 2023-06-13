@@ -18,7 +18,7 @@ tasks:
       - .venv/bin/pip install -e yololab
       - .venv/bin/yolo settings
       - echo "export YOLO_CONFIG_DIR=~/.config/Ultralytics/" >> .venv/bin/activate
-      - echo "set -gx YOLO_CONFIG_DIR ~/.config/Ultralytics/" >> .venv/bin/activate
+      - echo "set -gx YOLO_CONFIG_DIR ~/.config/Ultralytics/" >> .venv/bin/activate.fish
       # - .venv/bin/pip install nvidia-pyindex
       # - .venv/bin/pip install pytorch-quantization black
 
