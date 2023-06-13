@@ -123,7 +123,7 @@ tasks:
     
   test:opencv:
     cmds:
-      - python yololab/yololab/experiments/onxx.py --model models/fpds/weights/best.onnx --img samples/fp1.png
+      - python yololab/yololab/experiments/onnx.py --model models/fpds/weights/best.onnx --img samples/fp1.png
 
 
   test:onxx:

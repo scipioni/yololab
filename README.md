@@ -28,6 +28,13 @@ pip install -U opencv-python-rolling<5.0.0
 edit ~/.config/Ultralytics/settings.yaml to use <yololab> root dir for `dataset` and `runs` 
 
 
+## test fpds
+
+train
+```
+
+
+
 ## dataset
 
 ### pothole
