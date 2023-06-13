@@ -64,15 +64,15 @@ class DatasetFormatter():
         # if fitsInMiddleMargines:
         #     return middleX, middleY
         # else:
-        centerX = int((centerMargines[0]-centerMargines[1]) / 2)
-        centerY = int((centerMargines[1]-centerMargines[2]) / 2)
+        centerX = int((marginList[0]+marginList[1]) / 2)
+        centerY = int((marginList[2]+marginList[3]) / 2)
         if halfCroppedSize <= centerX:
-            if not centerX <= imageWidth - halfCroppedSize:
+            if centerX > imageWidth - halfCroppedSize:
                 centerX = imageWidth - halfCroppedSize
         else:
             centerX = halfCroppedSize
         if halfCroppedSize <= centerY:
-            if not centerY <= imageHeight - halfCroppedSize:
+            if centerY > imageHeight - halfCroppedSize:
                 centerY = imageHeight - halfCroppedSize
         else:
             centerY = halfCroppedSize
@@ -83,6 +83,8 @@ class DatasetFormatter():
         xm = boundingBox[1] - boundingBox[3] / 2
         yM = boundingBox[2] + boundingBox[4] / 2
         ym = boundingBox[2] - boundingBox[4] / 2
+        if xM - xm >= self.cropped_size or yM - ym >= self.cropped_size:
+            raise Exception()
         if marginList[0] or xM >= marginList[0]:
             marginList[0] = xM
         if marginList[1] or xm <= marginList[1]:
@@ -100,16 +102,15 @@ class DatasetFormatter():
         boundingBox[4] = boundingBox[4] * imageHeight
         return boundingBox
 
-    def process_file(self, filename):
+    def process_file(self, imagename):
+        filename = imagename.replace(self.image_extension, ".txt")
         with open(os.path.join(os.getcwd(), filename), 'r') as f:
             try:
-                imagename = filename.replace(".txt", self.image_extension)
                 imageWidth, imageHeight = imagesize.get(imagename)
                 image = cv.imread(imagename)
             except:
                 return False
 
-            lineList = []
             marginList = [float, float, float, float]  #xM, xm, yM, ym 
             for line in f:
                 boundingBox = line.split()
@@ -125,22 +126,23 @@ class DatasetFormatter():
                         else:
                             boundingBox[i] = value
                 boundingBox = self.to_pixels(boundingBox, imageWidth, imageHeight)
-                marginList = self.get_margins(boundingBox, marginList)
+                try: marginList = self.get_margins(boundingBox, marginList)
+                except:
+                    print('Boxes too far apart')
+                    return False
 
             center = self.get_crop_center(image, imageWidth, imageHeight, marginList)
             # middleX, middleY = int(imageWidth / 2), int(imageHeight / 2)
             # center = middleX, middleY
             croppedImage = self.crop_image(image, imageWidth, imageHeight, center)
-            cv.imshow(":[", croppedImage)
-
+            cv.imshow(imagename, croppedImage)
             cv.waitKey(0)
         
         return True
 
-    def process_directory(self, directoryPath=None):
-        if not directoryPath: directoryPath = self.directory_path
+    def process_directory(self):
         totalProcessedFiles = 0
-        for filename in glob.glob(directoryPath + '/*.txt'):
+        for filename in glob.glob(self.directory_path + '/*' + self.image_extension):
             processedFile = self.process_file(filename)
             if processedFile: totalProcessedFiles += 1
         return totalProcessedFiles
