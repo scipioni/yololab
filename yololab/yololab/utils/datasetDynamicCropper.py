@@ -10,6 +10,7 @@ class DatasetFormatter():
         parser = argparse.ArgumentParser(description='Format directory of dataset to yolo format and filter files with laying people in them.')
         parser.add_argument('DIRECTORY', type=str, help='input directory')
         parser.add_argument('-e', '--image-ext', type=str, required=False, help='extension of dataset images - default: .png')
+        parser.add_argument('-s', '--size', type=int, required=False, help='cropped image size')
         parser.add_argument('-r', '--recursive', required=False, action='store_true', help='treat input directory as a dataset, recursively processing all subdirectories')
         args = parser.parse_args()
 
@@ -21,6 +22,9 @@ class DatasetFormatter():
         else:
             if args.image_ext[0] == ".": self.image_extension = args.image_ext
             else: self.image_extension = "." + args.image_ext
+        
+        if not args.size: self.cropped_size = 640
+        else: self.cropped_size = args.size
         
     def convert_list_to_string(self, list, delimiter=""):
         string = ""
@@ -36,18 +40,20 @@ class DatasetFormatter():
 
     def crop_image(self, image, imageWidth, imageHeight, center):
         # middleY, middleX = int(imageHeight / 2), int(imageWidth / 2)
-        centerX, centerY = center
+        centerX, centerY = center[0], center[1]
         # dimX, dimY = min(640, imageWidth), min(640, imageHeight)
         # cropWidth, cropHeight = int(dimX / 2), int(dimY / 2)
-        cropWidth, cropHeight = int(640 / 2), int(640 / 2)
+        cropWidth, cropHeight = int(self.cropped_size / 2), int(self.cropped_size / 2)
         croppedImage = image[centerY-cropHeight : centerY+cropHeight,
                              centerX-cropWidth : centerX+cropWidth]
+        print(image.shape)
+        print(croppedImage.shape)
         return croppedImage
 
     def get_crop_center(self, image, imageWidth, imageHeight, marginList):
         middleX, middleY = int(imageWidth / 2), int(imageHeight / 2)
-        centerMargines = [middleX + 640 / 2, middleX - 640 / 2,
-                          middleY + 640 / 2, middleY - 640 / 2]
+        centerMargines = [middleX + self.cropped_size / 2, middleX - self.cropped_size / 2,
+                          middleY + self.cropped_size / 2, middleY - self.cropped_size / 2]
         fitsInMiddleMargines = True
         for i in range(4):
             if i % 2 == 0:
@@ -59,8 +65,8 @@ class DatasetFormatter():
         if fitsInMiddleMargines:
             return middleX, middleY
         else:
-            centerX = (centerMargines[0]-centerMargines[1]) / 2,
-            centerY = (centerMargines[1]-centerMargines[2]) / 2,
+            centerX = int((centerMargines[0]-centerMargines[1]) / 2)
+            centerY = int((centerMargines[1]-centerMargines[2]) / 2)
             return centerX, centerY
     
     def get_margins(self, boundingBox, marginList):
@@ -78,6 +84,13 @@ class DatasetFormatter():
             marginList[3] = ym
         return marginList
 
+    def to_pixels(self, boundingBox, imageWidth, imageHeight):
+        boundingBox[1] = boundingBox[1] * imageWidth
+        boundingBox[2] = boundingBox[2] * imageHeight
+        boundingBox[3] = boundingBox[3] * imageWidth
+        boundingBox[4] = boundingBox[4] * imageHeight
+        return boundingBox
+
     def process_file(self, filename):
         with open(os.path.join(os.getcwd(), filename), 'r') as f:
             try:
@@ -88,7 +101,7 @@ class DatasetFormatter():
                 return False
 
             lineList = []
-            marginList = [None, None, None, None]  #xM, xm, yM, ym 
+            marginList = [float, float, float, float]  #xM, xm, yM, ym 
             for line in f:
                 boundingBox = line.split()
                 for i in range(len(boundingBox)):
@@ -102,11 +115,15 @@ class DatasetFormatter():
                             return False
                         else:
                             boundingBox[i] = value
+                boundingBox = self.to_pixels(boundingBox, imageWidth, imageHeight)
                 marginList = self.get_margins(boundingBox, marginList)
 
-            center = self.get_crop_center(image, imageWidth, imageHeight, marginList)
+            # center = self.get_crop_center(image, imageWidth, imageHeight, marginList)
+            middleX, middleY = int(imageWidth / 2), int(imageHeight / 2)
+            center = middleX, middleY
             croppedImage = self.crop_image(image, imageWidth, imageHeight, center)
             cv.imshow(":[", croppedImage)
+
             cv.waitKey(0)
         
         return True
