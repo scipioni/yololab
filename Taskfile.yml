@@ -131,6 +131,9 @@ tasks:
       - yolo export model=models/yolov8n.pt imgsz=640 format=onnx opset=12
       - python yololab/yololab/experiments/onxx.py --model models/yolov8n.onnx --img samples/dogs.webp
 
+  test:grabber:
+    cmds:
+      - grabber --show --step --model models/fp/weights/best.onnx datasets/fp/valid/caucafall/Subject.10/Fall\ backwards/*.png
 
   opencv:
     cmds:
