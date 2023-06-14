@@ -140,8 +140,9 @@ class DatasetFormatter():
             # middleX, middleY = int(imageWidth / 2), int(imageHeight / 2)
             # center = middleX, middleY
             croppedImage = self.crop_image(image, imageWidth, imageHeight, center)
-            cv.imshow("Cropped Image", croppedImage)
-            cv.waitKey(0)
+            
+            # cv.imshow("Cropped Image", croppedImage)
+            # cv.waitKey(0)
         
         return True
 
