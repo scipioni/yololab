@@ -34,7 +34,8 @@ class DatasetFormatter():
         return string
 
     def write_to_file(self, croppedImage, filename, lineList):
-        filePath = filename.split("\\")
+        filename = filename.replace("\\", "/")
+        filePath = filename.split("/")
         i = len(filePath) - 1
         filePath.insert(i, "/cropped")
         filename = self.convert_list_to_string(filePath, "/")
