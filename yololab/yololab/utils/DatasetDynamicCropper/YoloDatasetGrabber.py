@@ -6,9 +6,9 @@ from BoundingBoxes import BoundingBoxes
 class YoloDatasetGrabber:
     def get_data(self, img_path):
         img = cv.imread(img_path)
-        label_path = changeExt(fixPath(label_path), "txt")
-        with open(os.path.join(os.getcwd(), filename), 'r') as f:
-            bbs = BoundingBoxes(f)
+        label_path = changeExt(fixPath(img_path), "txt")
+        with open(os.path.join(os.getcwd(), label_path), 'r') as label:
+            bbs = BoundingBoxes(label)
             return img, bbs, label_path
 
     def write_data(self, img_path, label_path, img, label):

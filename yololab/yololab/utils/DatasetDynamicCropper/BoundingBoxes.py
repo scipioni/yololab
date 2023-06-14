@@ -7,10 +7,10 @@ class BoundingBoxes:
             for i in range(1, len(bb)):
                 if self.is_normalized(): bb[i] = float(bb[i])
                 else: bb[i] = int(bb[i])
-            bbs.append(bb)
+            self.bbs.append(bb)
     
     def is_normalized(self):
-        format = self.format.str.lower()
+        format = self.format.lower()
         if format == "normalized": return True
         elif format == "pixel": return False
         else:
@@ -20,17 +20,24 @@ class BoundingBoxes:
 
     def bb_values(self, i):
         bb = self.bbs[i]
-        bb_class = self.bbs[0]
-        bb_x = self.bbs[0]
-        bb_y = self.bbs[1]
-        bb_w = self.bbs[2]
-        bb_h = self.bbs[3]
+        bb_class = bb[0]
+        bb_x = bb[1]
+        bb_y = bb[2]
+        bb_w = bb[3]
+        bb_h = bb[4]
         return bb_class, bb_x, bb_y, bb_w, bb_h
 
+    def bb_label(self, i):
+        bb = self.bbs[i]
+        bb_label = str(bb[0])
+        for j in range(1, len(bb)):
+            bb_label += " " + str(bb[j])
+        return bb_label
+
     def label(self):
-        label = str(self.bbs[0])
+        label = self.bb_label(0)
         for i in range(1, len(self.bbs)):
-            label += "\n" + str(self.bbs[i])
+            label += "\n" + self.bb_label(i)
         return label
 
     def normalize(self, img_w, img_h):
@@ -55,6 +62,7 @@ class BoundingBoxes:
             bb[4] = int(bb[4] * img_h)
             self.bbs[i] = bb
     
+    """
     def offset(self, offset_x, offset_y):
         if self.is_normalized: raise Exception("Bounding boxes need to be in pixel format.")
         for i in range(len(self.bbs)):
@@ -62,10 +70,10 @@ class BoundingBoxes:
             bb[1] = bb[1] - int(offset_x)
             bb[2] = bb[2] - int(offset_y)
             self.bbs[i] = bb
-
     """
+
     def to_cropped(self, crop_w, crop_h, offset_x, offset_y):
-        if self.is_normalized: raise Exception("Bounding boxes need to be in pixel format.")
+        if not self.is_normalized: raise Exception("Bounding boxes need to be in pixel format.")
         self.format = "normalized"
         for i in range(len(self.bbs)):
             bb = self.bbs[i]
@@ -75,5 +83,4 @@ class BoundingBoxes:
             bb[3] = float(bb[3] / crop_w)
             bb[4] = float(bb[4] / crop_h)
             self.bbs[i] = bb
-    """
         
