@@ -1,5 +1,5 @@
 path: ./fpds  # dataset root dir
-train: train  # train images (relative to 'path') 128 images
+train: train/split1  # train images (relative to 'path') 128 images
 val: valid  # val images (relative to 'path') 128 images
 #test: test/ # test images (optional)
 
