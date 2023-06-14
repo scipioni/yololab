@@ -33,10 +33,16 @@ class DatasetFormatter():
         string = string[:len(string)-1]
         return string
 
-    def write_to_file(self, filename, lineList):
+    def write_to_file(self, croppedImage, filename, lineList):
+        filePath = filename.split("\\")
+        i = len(filePath) - 1
+        filePath.insert(i, "/cropped")
+        filename = self.convert_list_to_string(filePath, "/")
         with open(filename, 'w') as fp:
             text = self.convert_list_to_string(lineList, "\n")
             fp.write(text)
+        imageName = filename.replace(".txt", self.image_extension)
+        cv.imwrite(imageName, croppedImage)
 
     def crop_image(self, image, imageWidth, imageHeight, center):
         # middleY, middleX = int(imageHeight / 2), int(imageWidth / 2)
@@ -107,6 +113,23 @@ class DatasetFormatter():
         boundingBox[4] = boundingBox[4] * imageHeight
         return boundingBox
 
+    def to_cropped_values(self, center, lineList):
+        croppedSize = self.cropped_size
+        centerX, centerY = center[0], center[1]
+        newLineList = []
+        for line in lineList:
+            boundingBox = line.split()
+            for i in range(len(boundingBox)):
+                if i != 0:
+                    value = float(boundingBox[i])
+                    boundingBox[i] = value
+            boundingBox[1] = (boundingBox[1] - centerX + croppedSize/2) / croppedSize
+            boundingBox[2] = (boundingBox[2] - centerY + croppedSize/2) / croppedSize
+            boundingBox[3] = boundingBox[3] / croppedSize
+            boundingBox[4] = boundingBox[4] / croppedSize
+            newLineList.append(self.convert_list_to_string(boundingBox, " "))
+        return newLineList
+
     def process_file(self, imagename):
         filename = imagename.replace(self.image_extension, ".txt")
         with open(os.path.join(os.getcwd(), filename), 'r') as f:
@@ -116,6 +139,7 @@ class DatasetFormatter():
             except:
                 return False
 
+            lineList = []
             marginList = [None, None, None, None]  #xM, xm, yM, ym 
             for line in f:
                 boundingBox = line.split()
@@ -135,18 +159,23 @@ class DatasetFormatter():
                 except:
                     print('Boxes too far apart')
                     return False
+                # boundingBox = self.normalize_cropped_values(boundingBox)
+                lineList.append(self.convert_list_to_string(boundingBox, " "))
 
             center = self.get_crop_center(image, imageWidth, imageHeight, marginList)
             # middleX, middleY = int(imageWidth / 2), int(imageHeight / 2)
             # center = middleX, middleY
             croppedImage = self.crop_image(image, imageWidth, imageHeight, center)
-            
+            lineList = self.to_cropped_values(center, lineList)
             # cv.imshow("Cropped Image", croppedImage)
             # cv.waitKey(0)
+            self.write_to_file(croppedImage, filename, lineList)
         
         return True
 
     def process_directory(self):
+        try: os.mkdir(self.directory_path + "/cropped")
+        except: pass
         totalProcessedFiles = 0
         for filename in glob.glob(self.directory_path + '/*' + self.image_extension):
             processedFile = self.process_file(filename)
