@@ -3,20 +3,24 @@ import argparse
 import glob
 import shutil
 
-def main(directory, imgExt):
-    def checkClass(directory):
-        path = os.path.join(directory, '*txt')
-        for file in glob.glob(os.path.join(directory, '*txt')):
+class DatasetCleaner():
+    def __init__(self, directory, imgExt) -> None:
+        self.directory = directory
+        self.imgExt = imgExt
+
+    def checkClass(self):
+        path = os.path.join(self.directory, '*txt')
+        for file in glob.glob(os.path.join(self.directory, '*txt')):
             with open(file) as f:
                 for line in f.readlines():
                     if line[0] == '1' or line[0] == '1.0':
-                        moveLaying(file)
+                        self.moveLaying(file)
             f.close()
                     
-    def moveLaying(path):
+    def moveLaying(self, path):
         path = path[:-3]
         txtPath = path + 'txt'
-        imgPath = path + imgExt
+        imgPath = path + self.imgExt
         if not os.path.exists('layingDataset'):
             os.mkdir('layingDataset')
         try:
@@ -25,13 +29,10 @@ def main(directory, imgExt):
         except:
             pass
 
-    
-    checkClass(directory)
-
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--dir', default='dataset/GOPR1716/images')
+    parser.add_argument('--dir', default='/home/andrea/Documents/scuola/pcto/yololab/dataset/GOPR1716/images')
     parser.add_argument('--imgExt', default='jpg')
     args = parser.parse_args()
-    main(args.dir, args.imgExt)
+    datasetCleaner = DatasetCleaner(args.dir, args.imgExt)
+    datasetCleaner.checkClass()
