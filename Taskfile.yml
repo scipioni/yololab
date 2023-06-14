@@ -13,12 +13,16 @@ tasks:
 
   venv:
     cmds:
-      - python -mvenv .venv --system-site-packages
-      - .venv/bin/pip install --upgrade pip
-      - .venv/bin/pip install -e yololab
-      - .venv/bin/yolo settings
-      - echo "export YOLO_CONFIG_DIR=~/.config/Ultralytics/" >> .venv/bin/activate
-      - echo "set -gx YOLO_CONFIG_DIR ~/.config/Ultralytics/" >> .venv/bin/activate.fish
+      - |
+        python -mvenv .venv --system-site-packages
+        echo "export YOLO_CONFIG_DIR=~/.config/Ultralytics/" >> .venv/bin/activate
+        echo "set -gx YOLO_CONFIG_DIR ~/.config/Ultralytics/" >> .venv/bin/activate.fish
+        source .venv/bin/activate
+        pip install --upgrade pip
+        pip install -e yololab
+        cd yololab 
+        pdm install -G train
+        yolo settings
       # - .venv/bin/pip install nvidia-pyindex
       # - .venv/bin/pip install pytorch-quantization black
 
