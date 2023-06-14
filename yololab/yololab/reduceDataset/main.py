@@ -2,24 +2,28 @@ import glob
 import argparse
 from config import *
 from dataset_reducer import DatasetReducer
+import imagesize
 
 class Reducer:
-    def __init__(self, folder_path):
+    def __init__(self, folder_path:str, width:int, heigth:int) -> tuple:
         self.folder_path = folder_path
+        self.width = width
+        self.height = heigth
 
     def reduce_dataset(self):
         image_files = glob.glob(self.folder_path + "/*.jpg")
+        
 
         for image_file in image_files:
-            converter = DatasetReducer(self.folder_path)
+            converter = DatasetReducer(self.folder_path, self.width, self.height)
 
-            x_start, y_start, x_end, y_end = converter.to_WxH(image_file)
+            _, _, x_end, y_end = converter.to_wxh(image_file)
 
             # Convert coordinates
             txt_file = image_file.replace(".jpg", ".txt")
             converter.coordinates_converter(txt_file)
 
-            print(f"Image: {image_file} - Cropped: ({x_start},{y_start}) to ({x_end},{y_end})")
+            print(f"Image: {image_file} - Cropped: to ({x_end},{y_end})")
 
         print("Conversion completed!")
 

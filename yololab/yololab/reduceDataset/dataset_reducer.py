@@ -1,4 +1,5 @@
 import cv2
+import imagesize
 
 class DatasetReducer:
     def __init__(self, folder_path:str, width:int, heigth:int) -> tuple:
@@ -6,12 +7,14 @@ class DatasetReducer:
         self.width = width
         self.height = heigth
 
-    def to_WxH(self, path:str):
+    def to_wxh(self, path:str):
         original_image = cv2.imread(path)
 
-        x_start = (original_image.shape[1] - self.width) // 2
+        image_w, image_h = imagesize.get(path)
+
+        x_start = (image_w - self.width) // 2
         x_end = x_start + self.width
-        y_start = (original_image.shape[0] - self.height) // 2
+        y_start = (image_h - self.height) // 2
         y_end = y_start + self.height
 
         cropped_image = original_image[y_start:y_end, x_start:x_end]
@@ -30,22 +33,24 @@ class DatasetReducer:
         try:
             with open(filename, "r") as f:
                 lines = ""
-                image_w, image_h, _, _ = self.to_WxH(filename.replace(".txt", ".jpg")) 
+                image_w, image_h = imagesize.get(filename.replace(".txt", ".jpg")) 
                 for line in f.readlines():
                     line = [float(x) for x in line.strip().split()]
                      
                     # new values
+                    # print(image_w, image_h)
                     xc  = (line[1] * 640) / image_w
                     yc  = (line[2] * 640) / image_h
                     w = (line[3] * 640) / image_w
                     h = (line[4] * 640) / image_h
-                    lines += f"{line[0]} {xc} {yc} {w} {h} \n" if check_bbox(line, image_w, image_h) else ""
+                    lines += f"{line[0]} {xc} {yc} {w} {h} \n" if self.check_bbox(line, image_w, image_h) else ""
                 
                 f.close()
 
             with open(filename, "w") as f:
                 f.write(lines)
-        except:
-            print("Image skipped")
+        except Exception as e:
+            print(f"{e}\nImage skipped")
+            pass
         # return lines
 
