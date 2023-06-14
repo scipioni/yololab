@@ -53,19 +53,21 @@ class DatasetFormatter():
         halfCroppedSize = int(self.cropped_size / 2)
         centerMargines = [middleX + halfCroppedSize, middleX - halfCroppedSize,
                           middleY + halfCroppedSize, middleY - halfCroppedSize]
-        fitsInMiddleMargines = True
-        for i in range(4):
-            if i % 2 == 0:
-                if not centerMargines[i] >= marginList[i]:
-                    fitsInMiddleMargines = False
-            else:
-                if not centerMargines[i] <= marginList[i]:
-                    fitsInMiddleMargines = False
+        # fitsInMiddleMargines = True
+        # for i in range(4):
+        #     if i % 2 == 0:
+        #         if not centerMargines[i] >= marginList[i]:
+        #             fitsInMiddleMargines = False
+        #     else:
+        #         if not centerMargines[i] <= marginList[i]:
+        #             fitsInMiddleMargines = False
         # if fitsInMiddleMargines:
         #     return middleX, middleY
         # else:
-        centerX = int((centerMargines[0]-centerMargines[1]) / 2)
-        centerY = int((centerMargines[1]-centerMargines[2]) / 2)
+        # centerX = int((centerMargines[0]-centerMargines[1]) / 2)
+        # centerY = int((centerMargines[1]-centerMargines[2]) / 2)
+        centerX = middleX
+        centerY = middleY
         if halfCroppedSize <= centerX:
             if not centerX <= imageWidth - halfCroppedSize:
                 centerX = imageWidth - halfCroppedSize
