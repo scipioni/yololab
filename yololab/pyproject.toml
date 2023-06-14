@@ -40,3 +40,5 @@ train = [
 [project.scripts]
 grabber = "yololab.main:main"
 fpds2voc = "yololab.utils.fpds:main"
+dynamic-cropper = "yololab.utils.DatasetDynamicCropper.main:main"
+dsconvert = "yololab.utils.dsconvert.main:main"

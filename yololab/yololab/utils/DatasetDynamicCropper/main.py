@@ -2,22 +2,22 @@ import os, glob
 import argparse
 import imagesize
 import cv2 as cv
-from YoloDatasetGrabber import YoloDatasetGrabber
-from BoundingBoxes import BoundingBoxes
-from DynamicCropper import DynamicCropper
+from .YoloDatasetGrabber import YoloDatasetGrabber
+from .BoundingBoxes import BoundingBoxes
+from .DynamicCropper import DynamicCropper
 
 class Main:
     def __init__(self):
         parser = argparse.ArgumentParser()
         parser = argparse.ArgumentParser(description='Format directory of dataset to yolo format and filter files with laying people in them.')
-        parser.add_argument('DIRECTORY', type=str, help='input directory')
+        parser.add_argument('--sdir', type=str, help='input directory')
         parser.add_argument('-e', '--image-ext', type=str, required=False, help='extension of dataset images - default: .png')
         parser.add_argument('-s', '--size', type=int, required=False, help='cropped image size')
         parser.add_argument('-r', '--recursive', required=False, action='store_true', help='treat input directory as a dataset, recursively processing all subdirectories')
         parser.add_argument('-v', '--verbose', required=False, action='store_true', help='show filenames')
         args = parser.parse_args()
 
-        self.directory_path = args.DIRECTORY
+        self.directory_path = args.sdir
         self.recursive = args.recursive
         self.verbose = args.verbose
 
