@@ -64,10 +64,8 @@ class DatasetFormatter():
         # if fitsInMiddleMargines:
         #     return middleX, middleY
         # else:
-        # centerX = int((centerMargines[0]-centerMargines[1]) / 2)
-        # centerY = int((centerMargines[1]-centerMargines[2]) / 2)
-        centerX = middleX
-        centerY = middleY
+        centerX = int((marginList[0]+marginList[1]) / 2)
+        centerY = int((marginList[2]+marginList[3]) / 2)
         if halfCroppedSize <= centerX:
             if centerX > imageWidth - halfCroppedSize:
                 centerX = imageWidth - halfCroppedSize
@@ -79,21 +77,26 @@ class DatasetFormatter():
         else:
             centerY = halfCroppedSize
         return centerX, centerY
-    
+
     def get_margins(self, boundingBox, marginList):
         xM = boundingBox[1] + boundingBox[3] / 2
         xm = boundingBox[1] - boundingBox[3] / 2
         yM = boundingBox[2] + boundingBox[4] / 2
         ym = boundingBox[2] - boundingBox[4] / 2
-        if xM - xm >= self.cropped_size or yM - ym >= self.cropped_size:
-            raise Exception()
-        if marginList[0] or xM >= marginList[0]:
+        if marginList[0] == None:
             marginList[0] = xM
-        if marginList[1] or xm <= marginList[1]:
             marginList[1] = xm
-        if marginList[2] or yM >= marginList[2]:
             marginList[2] = yM
-        if marginList[3] or ym <= marginList[3]:
+            marginList[3] = ym
+        if xM - xm >= int(self.cropped_size/2) or yM - ym >= int(self.cropped_size/2):
+            raise Exception()
+        if xM >= marginList[0]:
+            marginList[0] = xM
+        if xm <= marginList[1]:
+            marginList[1] = xm
+        if yM >= marginList[2]:
+            marginList[2] = yM
+        if ym <= marginList[3]:
             marginList[3] = ym
         return marginList
 
@@ -113,7 +116,7 @@ class DatasetFormatter():
             except:
                 return False
 
-            marginList = [float, float, float, float]  #xM, xm, yM, ym 
+            marginList = [None, None, None, None]  #xM, xm, yM, ym 
             for line in f:
                 boundingBox = line.split()
                 for i in range(len(boundingBox)):
@@ -137,7 +140,7 @@ class DatasetFormatter():
             # middleX, middleY = int(imageWidth / 2), int(imageHeight / 2)
             # center = middleX, middleY
             croppedImage = self.crop_image(image, imageWidth, imageHeight, center)
-            cv.imshow(imagename, croppedImage)
+            cv.imshow("Cropped Image", croppedImage)
             cv.waitKey(0)
         
         return True
