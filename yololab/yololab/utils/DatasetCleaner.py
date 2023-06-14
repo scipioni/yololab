@@ -14,6 +14,7 @@ class DatasetCleaner():
             with open(file) as f:
                 for line in f.readlines():
                     if line[0] == '1' or line[0] == '1.0':
+
                         self.moveLaying(file)
             f.close()
                     
