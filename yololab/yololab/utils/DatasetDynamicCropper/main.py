@@ -51,17 +51,17 @@ class Main:
         output_path = self.directory_path + "/cropped"
         if not os.path.exists(output_path):
             os.mkdir(output_path)
-        files = Glob.glob(f"{sourcePath}/*.{self.__wrappers[inputWrapper]().ext()}", recursive=True)
-        for img_path in glob.glob(self.directory_path + '/*' + self.image_extension):
+        files = glob.glob(self.directory_path + '/*' + self.image_extension)
+        for img_path in files:
             grabber = YoloDatasetGrabber()
             img, bbs, label_path = grabber.get_data(img_path)
             if self.verbose:
-                print(img_path)
+                print(f"\r{img_path}", end="")
             processed_file, out_img, out_label = self.crop_img(img, bbs, img_path, label_path)
             if processed_file:
                 processed_files += 1
                 out_img_path = output_path + "/" + os.path.basename(img_path)
-                out_label_path = out_img_path.replace(self.image_extension, ".txt")
+                out_label_path = out_img_path.replace(self.image_extension, ".txt") 
                 grabber.write_data(out_img_path, out_label_path, out_img, out_label)
         return processed_files
 

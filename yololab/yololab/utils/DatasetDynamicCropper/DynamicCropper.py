@@ -20,7 +20,7 @@ class DynamicCropper:
         return xM, xm, yM, ym
 
     def check(self, xM, xm, yM, ym):
-        if xM - xm >= int(self.crop_w / 2) or yM - ym >= int(self.crop_h / 2):
+        if xM - xm >= int(self.crop_w) or yM - ym >= int(self.crop_h):
             return False
         return True
 
