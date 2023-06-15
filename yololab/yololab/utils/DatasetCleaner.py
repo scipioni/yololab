@@ -8,7 +8,7 @@ class DatasetCleaner():
         self.directory = directory
         self.imgExt = imgExt
 
-    def checkClass(self):4
+    def checkClass(self):
         path = os.path.join(self.directory, '*txt')
         for file in glob.glob(os.path.join(self.directory, '*txt')):
             with open(file) as f:
