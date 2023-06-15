@@ -10,4 +10,3 @@ checkpoints
 venv
 runs
 .cvenv/
-datasets/yololab/yololab/utils/to_fallen_dataset.py
