@@ -15,22 +15,27 @@ type = '../IMG_6573.mp4'
 
 model = YOLO(sys.argv[1])
 cap = CV.VideoCapture(type)
-frame = 0 
+ 
 
-'''while frame is not None:
-    ret, frame = cap.read()
-    timestamp = str(int(time.time()))
-    results = model(source=frame, show=True, save=False, save_txt=False, save_conf=False, classes=[0], name=f'{timestamp}.txt')
-    CV.imwrite(f'{sys.argv[2]}/{timestamp}.jpg', frame)
-    with open(f'{sys.argv[2]}/{int(time.time())}.txt', 'w') as file:
-        for result in results:
-            for box in result.boxes:
-                for i in range(len(box.cls)):
-                    file.write(f"{int(box.cls[i])} {box.xywh[i][0]} {box.xywh[i][1]} {box.xywh[i][2]} {box.xywh[i][3]}\n")'''
+def fromVideo():
+    frame = 0
+    while frame is not None:
+        ret, frame = cap.read()
+        timestamp = str(int(time.time()))
+        results = model(source=frame, show=True, save=False, save_txt=False, save_conf=False, classes=[0], name=f'{timestamp}.txt')
+        CV.imwrite(f'{sys.argv[2]}/{timestamp}.jpg', frame)
+        with open(f'{sys.argv[2]}/{int(time.time())}.txt', 'w') as file:
+            for result in results:
+                for box in result.boxes:
+                    for i in range(len(box.cls)):
+                        file.write(f"{int(box.cls[i])} {box.xywh[i][0]} {box.xywh[i][1]} {box.xywh[i][2]} {box.xywh[i][3]}\n")
+
+fromVideo()
 
 dc = DynamicCropper(640,640)
 files = glob.glob(f'{sys.argv[2]}/*.jpg')
 yolog = YoloDatasetGrabber()
+
 for file in files:
     try:
         img, bbs, label_path = yolog.get_data(file);
