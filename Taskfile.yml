@@ -11,14 +11,26 @@ tasks:
       - go-task -l
     silent: true
 
+  venv:windows:
+    cmds:
+      - python -mvenv venv --system-site-packages
+      - venv/Scripts/pip.exe install --upgrade pip
+      - venv/Scripts/pip.exe install -e yololab
+    status:
+      - test -f venv/Scripts/yolo.exe
+
   venv:
     cmds:
-      - python -mvenv .venv --system-site-packages
-      - .venv/bin/pip install --upgrade pip
-      - .venv/bin/pip install -e yololab
-      - .venv/bin/yolo settings
-      - echo "export YOLO_CONFIG_DIR=~/.config/Ultralytics/" >> .venv/bin/activate
-      - echo "set -gx YOLO_CONFIG_DIR ~/.config/Ultralytics/" >> .venv/bin/activate
+      - |
+        python -mvenv .venv --system-site-packages
+        echo "export YOLO_CONFIG_DIR=~/.config/Ultralytics/" >> .venv/bin/activate
+        echo "set -gx YOLO_CONFIG_DIR ~/.config/Ultralytics/" >> .venv/bin/activate.fish
+        source .venv/bin/activate
+        pip install --upgrade pip
+        pip install -e yololab
+        cd yololab 
+        pdm install -G train
+        yolo settings
       # - .venv/bin/pip install nvidia-pyindex
       # - .venv/bin/pip install pytorch-quantization black
 
@@ -110,8 +122,8 @@ tasks:
       - |
         # https://docs.ultralytics.com/usage/cfg/
         export YOLO_CONFIG_DIR=~/.config/Ultralytics/
-        yolo detect train project=models name=fpds data=datasets/fpds.yaml model=models/yolov8n.pt pretrained=true exist_ok=true imgsz=640 epochs=5 lr0=0.01
-        yolo export model=models/fpds/weights/best.pt imgsz=640 format=onnx opset=12
+        yolo detect train project=models name=fp data=datasets/fp.yaml model=models/yolov8n.pt pretrained=true exist_ok=true imgsz=640 epochs=20 batch=-1 lr0=0.01
+        yolo export model=models/fp/weights/best.pt imgsz=640 format=onnx opset=12
     
   test:train:mini:
     cmds:
@@ -131,6 +143,9 @@ tasks:
       - yolo export model=models/yolov8n.pt imgsz=640 format=onnx opset=12
       - python yololab/yololab/experiments/onxx.py --model models/yolov8n.onnx --img samples/dogs.webp
 
+  test:grabber:
+    cmds:
+      - grabber --show --step --model models/fp/weights/best.onnx datasets/fp/valid/caucafall/Subject.10/Fall\ backwards/*.png
 
   opencv:
     cmds:
