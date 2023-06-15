@@ -7,4 +7,6 @@ models
 notebooks
 checkpoints
 /build
+venv
+runs
 .cvenv/
