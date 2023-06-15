@@ -170,9 +170,9 @@ class FileGrabber(Grabber):
 
         for index, filename in enumerate(files):
             if filename[0] != "/":
-                files[index] = os.path.join(self.config.path, filename)
+                files[index] = filename #os.path.join(self.config.path, filename)
 
-        if files and ".jpg" not in files[0]:
+        if files and (".jpg" not in files[0] and ".png" not in files[0]):
             self.video = files[0]
         self.files = files
 
@@ -235,7 +235,7 @@ class FileGrabber(Grabber):
         elif 0 <= self.current < len(self.files):
             with timing("cv.imread"):
                 # https://github.com/libvips/pyvips/issues/179#issuecomment-618936358
-                img = cv.imread(self.files[self.current], cv.IMREAD_UNCHANGED)
+                img = cv.imread(self.files[self.current], cv.IMREAD_COLOR)
             if self.grey:
                 img = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
             self.current_frame = img

@@ -15,33 +15,32 @@ label_map = {
 
 class Convert:
     def add_file(self, filename, ext=".png"):
-        objs = []
-        with open(filename) as f:
-            counter_box = 0
-            for row in f.readlines():
-                try:
-                    box = [int(s.strip()) for s in row.split(" ")]
-                except:  # già convertito perché trovo dei float
-                    return
-
-                objs.append(
-                    PascalObject(
-                        lookup[box[0]],
-                        "person",
-                        truncated=False,
-                        difficult=False,
-                        bndbox=BndBox(box[1], box[3], box[2], box[4]),
-                    )
-                )
-
-        print(f"convert {filename}")
         fileimg = str(filename).replace(".txt", ext)
         try:
             w,h = imagesize.get(fileimg)
+            objs = []
+            with open(filename) as f:
+                counter_box = 0
+                for row in f.readlines():
+                    box = [int(s.strip()) for s in row.split(" ")]
+                    if not((0 < box[1] < w) or (0 < box[2] < h) or (0 < box[3] < w) or (0 < box[4] < h)):
+                        raise
+                    objs.append(
+                        PascalObject(
+                            lookup[box[0]],
+                            "person",
+                            truncated=False,
+                            difficult=False,
+                            bndbox=BndBox(box[1], box[3], box[2], box[4]),
+                        )
+                    )
+            print(f"convert {filename}")
         except:
             print(f"skip {fileimg}")
             os.remove(str(filename))
+            os.remove(str(fileimg))
             return
+
 
         # save pascal voc
         pascal_ann = PascalVOC(filename.name, size=size_block(w, h, 3), objects=objs)
