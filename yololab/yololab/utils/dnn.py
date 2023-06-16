@@ -20,7 +20,7 @@ log = logging.getLogger(__name__)
 
 CLASSES = {0:"up", 1:"down"} # TODO, togliere
 colors = np.random.uniform(0, 255, size=(max  (len(CLASSES),80), 3)) # TODO
-
+colors = [(0,255,0), (0,0,255)]
 
 class Net:
     def __init__(self, config):
@@ -104,10 +104,17 @@ class NetOnnx(Net):
         super().show(scale=scale)
 
     def draw_bounding_box(self, img, class_id, confidence, x, y, x_plus_w, y_plus_h):
-        label = f'{CLASSES.get(class_id, "noname")} ({confidence:.2f})'
-        color = colors[class_id]
+        label = f'{CLASSES.get(class_id, "noname")} {confidence:.2f}'
+        try:
+            color = colors[class_id]
+        except:
+            color = (255,0,0)
         cv.rectangle(img, (x, y), (x_plus_w, y_plus_h), color, 2)
-        cv.putText(img, label, (x - 10, y - 10), cv.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
+
+        font = cv.FONT_HERSHEY_SIMPLEX
+        text_w, text_h = cv.getTextSize(label, font, 0.5, thickness=2)[0]
+        cv.rectangle(img, (x, y-2*text_h), (x+text_w+3, y), color, cv.FILLED)
+        cv.putText(img, label, (x+3, y - text_h + 2), font, 0.5, (0,0,0), 1)
 
 
 class NetYoloPose(Net):
