@@ -18,6 +18,8 @@ try:
     while frame is not None:
         ret, frame = cap.read()
         timestamp = str(int(time.time()))
+        if frame is None:
+            break
         results = model(source=frame, show=True, save=False, save_txt=False, save_conf=False, conf=0.1, classes=[0,1], name=f'{timestamp}.txt')
         CV.imwrite(f'{sys.argv[2]}/{timestamp}.jpg', frame)
         width, height = imagesize.get(f'{sys.argv[2]}/{timestamp}.jpg')
