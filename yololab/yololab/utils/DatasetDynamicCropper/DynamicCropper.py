@@ -1,4 +1,4 @@
-from BoundingBoxes import BoundingBoxes
+from .BoundingBoxes import BoundingBoxes
 
 class DynamicCropper:
     def __init__(self, img_w, img_h, crop_w, crop_h):

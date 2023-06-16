@@ -1,7 +1,7 @@
 import os
 import cv2 as cv
-from PathUtil import changeExt, fixPath
-from BoundingBoxes import BoundingBoxes
+from .PathUtil import changeExt, fixPath
+from .BoundingBoxes import BoundingBoxes
 
 class YoloDatasetGrabber:
     def get_data(self, img_path):

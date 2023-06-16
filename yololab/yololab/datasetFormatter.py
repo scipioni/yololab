@@ -18,7 +18,7 @@ class DatasetFormatter():
         parser.add_argument('-v', '--verbose', required=False, action='store_true', help='show filenames that contain laying people')
         args = parser.parse_args()
         
-        self.directory_path = args.DIRECTORY
+        self.directory_path = args.sdir
         
         if not args.filter and not args.normalize:
             parser.error("At least one of --filter (-f) and --normalize (-n) required")

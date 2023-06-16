@@ -14,7 +14,7 @@ class DatasetFormatter():
         parser.add_argument('-r', '--recursive', required=False, action='store_true', help='treat input directory as a dataset, recursively processing all subdirectories')
         args = parser.parse_args()
 
-        self.directory_path = args.DIRECTORY
+        self.directory_path = args.sdir
         self.recursive = args.recursive
 
         if not args.image_ext:
