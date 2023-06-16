@@ -31,8 +31,8 @@ class Main:
         else: self.cropped_size = args.size
         
     def crop_img(self, img, bbs, img_path, label_path):
-        cropper = DynamicCropper(self.cropped_size, self.cropped_size)
         img_w, img_h = imagesize.get(img_path)
+        cropper = DynamicCropper(img_w, img_h, self.cropped_size, self.cropped_size)
         bbs.to_pixel(img_w, img_h)
         xM, xm, yM, ym = cropper.get_borders(bbs)
         borders_exceed = not cropper.check(xM, xm, yM, ym)
@@ -40,9 +40,8 @@ class Main:
             return False, None, None
         center_x, center_y = cropper.get_crop_center(img_w, img_h, xM, xm, yM, ym)
         cropped_img = cropper.crop(img, center_x, center_y, img_w, img_h)
-        offset_x = center_x - self.cropped_size / 2
-        offset_y = center_y - self.cropped_size / 2
-        bbs.to_cropped(self.cropped_size, self.cropped_size, offset_x, offset_y)
+        cropped_img_shape = cropped_img.shape
+        bbs.to_cropped(cropped_img_shape[1], cropped_img_shape[0], center_x, center_y)
         label = bbs.label()
         return True, cropped_img, label
 
