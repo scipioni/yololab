@@ -66,8 +66,7 @@ class Main:
         for img_path in files:
             grabber = YoloDatasetGrabber()
             img, bbs, label_path = grabber.get_data(img_path)
-            if self.verbose:
-                print(f"\r{img_path}", end="")
+            print(f"\r{img_path}", end="")
             try:
                 processed_file, out_img, out_label = self.crop_img(img, bbs, img_path, label_path)
                 if processed_file:
