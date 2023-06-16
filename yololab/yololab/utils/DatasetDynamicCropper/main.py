@@ -9,7 +9,7 @@ from DynamicCropper import DynamicCropper
 class Main:
     def __init__(self):
         parser = argparse.ArgumentParser()
-        parser = argparse.ArgumentParser(description='Format directory of dataset to yolo format and filter files with laying people in them.')
+        parser = argparse.ArgumentParser(description='Dynamically crops all images in a dataset.')
         parser.add_argument('DIRECTORY', type=str, help='input directory')
         parser.add_argument('-e', '--image-ext', type=str, required=False, help='extension of dataset images - default: .png')
         parser.add_argument('-s', '--size', type=int, required=False, help='cropped image size')
@@ -46,36 +46,43 @@ class Main:
         label = bbs.label()
         return True, cropped_img, label
 
+    def process_file(self, img_path, output_path):
+        grabber = YoloDatasetGrabber()
+        img, bbs, label_path = grabber.get_data(img_path)
+        if self.verbose:
+            print(f"\r{img_path}", end="")
+        processed_file, out_img, out_label = self.crop_img(img, bbs, img_path, label_path)
+        if processed_file:
+            out_img_path = output_path + "/" + os.path.basename(img_path)
+            out_label_path = out_img_path.replace(self.image_extension, ".txt") 
+            grabber.write_data(out_img_path, out_label_path, out_img, out_label)
+        return processed_file
+
     def process_directory(self):
-        processed_files = 0
         output_path = self.directory_path + "/cropped"
         if not os.path.exists(output_path):
             os.mkdir(output_path)
-        files = glob.glob(self.directory_path + '/*' + self.image_extension)
-        for img_path in files:
-            grabber = YoloDatasetGrabber()
-            img, bbs, label_path = grabber.get_data(img_path)
-            if self.verbose:
-                print(f"\r{img_path}", end="")
-            processed_file, out_img, out_label = self.crop_img(img, bbs, img_path, label_path)
+        processed_files = 0
+        for img_path in glob.iglob(self.directory_path + '/*' + self.image_extension):
+            processed_file = self.process_file(img_path, output_path)
             if processed_file:
                 processed_files += 1
-                out_img_path = output_path + "/" + os.path.basename(img_path)
-                out_label_path = out_img_path.replace(self.image_extension, ".txt") 
-                grabber.write_data(out_img_path, out_label_path, out_img, out_label)
         return processed_files
 
-    def process_directories_recursively(self, directory_path=None):
-        if not directory_path: directory_path = self.directory_path
+    def process_directory_recursively(self):
         processed_files = 0
-        for path in glob.glob(directory_path + '/*'):
-            if os.path.isdir(path):
-                print("Processing {path}...".format(path = path.replace('\\', '/')))
-                dir_processed_files = self.process_directories_recursively(path)
-                processed_files += dir_processed_files
-            elif path.endswith('.txt'):
-                processed_file = self.process_file(path)
-                if processed_file: processed_files += 1
+        for root_path, dir_paths, file_paths in os.walk(self.directory_path):
+            for img_path in file_paths:
+                if img_path.endswith(self.image_extension):
+                    img_path = os.path.join(root_path, img_path)
+                    directory_path = os.path.dirname(img_path)
+                    if not directory_path.replace("\\", "/").endswith("/cropped"):
+                        output_path = directory_path + "/cropped"
+                        if not os.path.exists(output_path):
+                            os.mkdir(output_path)
+                        processed_file = self.process_file(img_path, output_path)
+                        if processed_file:
+                            processed_files += 1
         return processed_files
 
 def main():
@@ -83,12 +90,12 @@ def main():
     total_processed_files = 0
     if dataset_cropper.recursive:
         print("Processing dataset...")
-        total_processed_files = dataset_cropper.process_directories_recursively()
+        total_processed_files = dataset_cropper.process_directory_recursively()
     else:
         print("Processing directory...")
         total_processed_files = dataset_cropper.process_directory()
 
-    print("Processed {processedCount} files.".format(processedCount = total_processed_files))
+    print("\nProcessed {processedCount} files.".format(processedCount = total_processed_files))
     print("All Done!")
 
 if __name__ == '__main__':
