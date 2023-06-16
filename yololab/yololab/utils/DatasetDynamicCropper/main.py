@@ -2,9 +2,9 @@ import os, glob
 import argparse
 import imagesize
 import cv2 as cv
-from YoloDatasetGrabber import YoloDatasetGrabber
-from BoundingBoxes import BoundingBoxes
-from DynamicCropper import DynamicCropper
+from .YoloDatasetGrabber import YoloDatasetGrabber
+from .BoundingBoxes import BoundingBoxes
+from .DynamicCropper import DynamicCropper
 
 class Main:
     def __init__(self):
@@ -57,12 +57,15 @@ class Main:
             img, bbs, label_path = grabber.get_data(img_path)
             if self.verbose:
                 print(f"\r{img_path}", end="")
-            processed_file, out_img, out_label = self.crop_img(img, bbs, img_path, label_path)
-            if processed_file:
-                processed_files += 1
-                out_img_path = output_path + "/" + os.path.basename(img_path)
-                out_label_path = out_img_path.replace(self.image_extension, ".txt") 
-                grabber.write_data(out_img_path, out_label_path, out_img, out_label)
+            try:
+                processed_file, out_img, out_label = self.crop_img(img, bbs, img_path, label_path)
+                if processed_file:
+                    processed_files += 1
+                    out_img_path = output_path + "/" + os.path.basename(img_path)
+                    out_label_path = out_img_path.replace(self.image_extension, ".txt") 
+                    grabber.write_data(out_img_path, out_label_path, out_img, out_label)
+            except:
+                print("errorino. IMG: " + img_path)
         return processed_files
 
     def process_directories_recursively(self, directory_path=None):
