@@ -6,6 +6,7 @@
 models
 notebooks
 checkpoints
+samples
 /build
 venv
 runs
