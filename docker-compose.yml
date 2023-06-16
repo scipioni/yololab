@@ -3,7 +3,7 @@ name: "yololab"
 services:
 
   grabber:
-    image: s
+    image: yololab/dev/grabber
     #command: "ocr_run --camera-id 0 --disable-watchdog ${OCR_OPTS} $WS $PLATE $OCR"
     #restart: unless-stopped
     build:
