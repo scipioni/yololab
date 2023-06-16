@@ -8,7 +8,7 @@ import imagesize
 
 import glob
 
-v_path = 'samples/falling_cunico.mp4'
+type = '../video_2023-06-16_11-49-59.mp4'
 
 model = YOLO(sys.argv[1])
 cap = CV.VideoCapture(v_path)
