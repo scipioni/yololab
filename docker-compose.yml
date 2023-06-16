@@ -1,0 +1,38 @@
+version: "3"
+name: "yololab"
+services:
+
+  grabber:
+    image: s
+    #command: "ocr_run --camera-id 0 --disable-watchdog ${OCR_OPTS} $WS $PLATE $OCR"
+    #restart: unless-stopped
+    build:
+      context: ./yololab
+      args:
+        - ENV=${ENV}
+        #- OPENCV_VERSION=${OPENCV_VERSION}
+    volumes:
+      - /dev/shm:/dev/shm
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      #- ./runtime/:/runtime
+      #- ./tmp/images/:/tmp/images/
+      - ./yololab/yololab:/app/yololab
+      - ./models:/models
+      - ./samples:/samples
+      - ./datasets:/datasets
+      - ./runtime/.bash_history:/root/.bash_history
+
+    environment:
+      - DISPLAY
+      - QT_X11_NO_MITSHM=1
+    devices:
+      - "/dev/nvidia0:/dev/nvidia0"
+      - "/dev/nvidia-uvm:/dev/nvidia-uvm"
+      - "/dev/nvidia-uvm-tools:/dev/nvidia-uvm-tools"
+      - "/dev/nvidiactl:/dev/nvidiactl"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: [ gpu ]
+
