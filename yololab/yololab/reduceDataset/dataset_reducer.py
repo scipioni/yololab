@@ -22,7 +22,7 @@ class DatasetReducer:
         cv2.imwrite(path, cropped_image)
         return (x_start, y_start, x_end, y_end)
 
-    def check_bbox(self, line:list, image_w:int, image_h:int):
+    def check_bbox(self, line:list, image_w:int, image_h:int) -> bool:
         return True if (line[1] + line[3]/2 < image_w + self.width/2 and
                         line[1] - line[3]/2 < image_w - self.width/2 and
                         line[2] + line[4]/2 < image_h + self.height/2 and
