@@ -14,12 +14,10 @@ class Main:
         parser.add_argument('-e', '--image-ext', type=str, required=False, help='extension of dataset images - default: .png')
         parser.add_argument('-s', '--size', type=int, required=False, help='cropped image size')
         parser.add_argument('-r', '--recursive', required=False, action='store_true', help='treat input directory as a dataset, recursively processing all subdirectories')
-        parser.add_argument('-v', '--verbose', required=False, action='store_true', help='show filenames')
         args = parser.parse_args()
 
         self.directory_path = args.DIRECTORY
         self.recursive = args.recursive
-        self.verbose = args.verbose
 
         if not args.image_ext:
             self.image_extension = ".png"
@@ -46,8 +44,7 @@ class Main:
         return True, cropped_img, label
 
     def process_file(self, img_path, output_path):
-        if self.verbose:
-            print(f"\r{img_path}", end="")
+        print(f"\r{img_path}", end="")
         grabber = YoloDatasetGrabber()
         try:
             img, bbs, label_path = grabber.get_data(img_path)
