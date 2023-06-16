@@ -39,7 +39,7 @@ class Main:
         if borders_exceed:
             return False, None, None
         center_x, center_y = cropper.get_crop_center(img_w, img_h, xM, xm, yM, ym)
-        cropped_img = cropper.crop(img, center_x, center_y)
+        cropped_img = cropper.crop(img, center_x, center_y, img_w, img_h)
         offset_x = center_x - self.cropped_size / 2
         offset_y = center_y - self.cropped_size / 2
         bbs.to_cropped(self.cropped_size, self.cropped_size, offset_x, offset_y)
@@ -47,10 +47,14 @@ class Main:
         return True, cropped_img, label
 
     def process_file(self, img_path, output_path):
-        grabber = YoloDatasetGrabber()
-        img, bbs, label_path = grabber.get_data(img_path)
         if self.verbose:
             print(f"\r{img_path}", end="")
+        grabber = YoloDatasetGrabber()
+        try:
+            img, bbs, label_path = grabber.get_data(img_path)
+        except:
+            print(" has an incorrect label, it wasn't cropped.")
+            return False
         processed_file, out_img, out_label = self.crop_img(img, bbs, img_path, label_path)
         if processed_file:
             out_img_path = output_path + "/" + os.path.basename(img_path)

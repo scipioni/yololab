@@ -59,8 +59,9 @@ class DynamicCropper:
         
         return center_x, center_y
 
-    def crop(self, img, center_x, center_y):
+    def crop(self, img, center_x, center_y, img_w, img_h):
         half_crop_w, half_crop_h = int(self.crop_w / 2), int(self.crop_h / 2)
-        cropped_img = img[center_y - half_crop_h : center_y + half_crop_h,
-                            center_x - half_crop_w : center_x + half_crop_w]
+        crop_w, crop_h = min(img_w, half_crop_w), min(img_h, half_crop_h)
+        cropped_img = img[center_y - crop_h : center_y + crop_h,
+                            center_x - crop_w : center_x + crop_w]
         return cropped_img

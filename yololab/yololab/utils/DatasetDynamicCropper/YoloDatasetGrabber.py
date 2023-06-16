@@ -7,8 +7,11 @@ class YoloDatasetGrabber:
     def get_data(self, img_path):
         img = cv.imread(img_path)
         label_path = changeExt(fixPath(img_path), "txt")
+        if not os.path.exists(label_path):
+            raise Exception(img_path + " doesn't have a label.")
         with open(os.path.join(os.getcwd(), label_path), 'r') as label:
-            bbs = BoundingBoxes(label)
+            try: bbs = BoundingBoxes(label)
+            except: raise Exception(label_path + " uses an incorrect format.")
             return img, bbs, label_path
 
     def write_data(self, img_path, label_path, img, label):

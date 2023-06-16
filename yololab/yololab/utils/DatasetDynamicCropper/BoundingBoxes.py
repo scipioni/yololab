@@ -8,6 +8,8 @@ class BoundingBoxes:
                 if self.is_normalized(): bb[i] = float(bb[i])
                 else: bb[i] = int(bb[i])
             self.bbs.append(bb)
+        if self.bbs == []:
+            raise Exception("Label file is empty.")
     
     def is_normalized(self):
         format = self.format.lower()
