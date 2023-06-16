@@ -7,5 +7,7 @@ models
 notebooks
 checkpoints
 /build
+venv
+runs
 .cvenv/
-datasets/yololab/yololab/utils/to_fallen_dataset.py
+*.onnx
