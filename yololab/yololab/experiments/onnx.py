@@ -11,7 +11,9 @@ class ObjectDetector:
 
     def load_model(self):
         #model = onnx.load(self.model_path)
-        return ort.InferenceSession(self.model_path)
+        providers = [("CUDAExecutionProvider", {"cudnn_conv_use_max_workspace": '1'})]
+        sess_options = ort.SessionOptions()
+        return ort.InferenceSession(self.model_path, sess_options=sess_options, providers=providers)
 
     def detect_object(self, image_path):
         # Load image
@@ -45,8 +47,8 @@ class ObjectDetector:
 def main():
     # Parse command-line arguments
     parser = argparse.ArgumentParser(description='Object Detection using ONNX model')
-    parser.add_argument('model', type=str, help='Path to the ONNX model file')
-    parser.add_argument('image', type=str, help='Path to the image file')
+    parser.add_argument('--model', type=str, help='Path to the ONNX model file')
+    parser.add_argument('--image', type=str, help='Path to the image file')
     args = parser.parse_args()
 
     # Create ObjectDetector instance

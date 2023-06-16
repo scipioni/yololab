@@ -11,3 +11,5 @@ samples
 venv
 runs
 .cvenv/
+*.onnx
+.env
