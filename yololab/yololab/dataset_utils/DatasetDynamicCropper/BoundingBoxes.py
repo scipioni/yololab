@@ -8,6 +8,8 @@ class BoundingBoxes:
                 if self.is_normalized(): bb[i] = float(bb[i])
                 else: bb[i] = int(bb[i])
             self.bbs.append(bb)
+        if self.bbs == []:
+            raise Exception("Label file is empty.")
     
     def is_normalized(self):
         format = self.format.lower()
@@ -72,9 +74,11 @@ class BoundingBoxes:
             self.bbs[i] = bb
     """
 
-    def to_cropped(self, crop_w, crop_h, offset_x, offset_y):
+    def to_cropped(self, crop_w, crop_h, center_x, center_y):
         if not self.is_normalized: raise Exception("Bounding boxes need to be in pixel format.")
         self.format = "normalized"
+        offset_x = center_x - crop_w / 2
+        offset_y = center_y - crop_h / 2
         for i in range(len(self.bbs)):
             bb = self.bbs[i]
             for j in range(1, len(bb)): bb[j] = float(bb[j])

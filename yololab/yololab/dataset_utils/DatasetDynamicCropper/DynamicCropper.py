@@ -1,9 +1,9 @@
 from .BoundingBoxes import BoundingBoxes
 
 class DynamicCropper:
-    def __init__(self, crop_w, crop_h):
-        self.crop_w = crop_w
-        self.crop_h = crop_h
+    def __init__(self, img_w, img_h, crop_w, crop_h):
+        self.crop_w = min(img_w, crop_w)
+        self.crop_h = min(img_h, crop_h)
 
     def get_borders(self, bbs):
         bb_class, bb_x, bb_y, bb_w, bb_h = bbs.bb_values(0)
@@ -25,9 +25,9 @@ class DynamicCropper:
         return True
 
     def get_crop_center(self, img_w, img_h, xM, xm, yM, ym):
-        middle_x, middle_y = int(img_w / 2), int(img_h / 2)
         half_crop_w, half_crop_h = int(self.crop_w / 2), int(self.crop_h / 2)
 
+        # middle_x, middle_y = int(img_w / 2), int(img_h / 2)
         # centerMargines = [middle_x + half_crop_w, middle_x - half_crop_w,
         #                   middle_y + half_crop_h, middle_y - half_crop_h]
         # # fitsInMiddleMargines = True
@@ -59,7 +59,7 @@ class DynamicCropper:
         
         return center_x, center_y
 
-    def crop(self, img, center_x, center_y):
+    def crop(self, img, center_x, center_y, img_w, img_h):
         half_crop_w, half_crop_h = int(self.crop_w / 2), int(self.crop_h / 2)
         cropped_img = img[center_y - half_crop_h : center_y + half_crop_h,
                             center_x - half_crop_w : center_x + half_crop_w]

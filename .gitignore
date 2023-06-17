@@ -6,9 +6,11 @@
 models
 notebooks
 checkpoints
+samples
 /build
 venv
 runs
 .cvenv/
 *.onnx
 .env
+.venv310
