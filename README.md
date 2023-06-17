@@ -28,6 +28,13 @@ pip install -U opencv-python-rolling<5.0.0
 edit ~/.config/Ultralytics/settings.yaml to use <yololab> root dir for `dataset` and `runs` 
 
 
+## export engine format
+
+```
+pip install nvidia-tensorrt
+yolo export model=models/yolov8n.pt imgsz=640 format=engine device=0
+```
+
 ## test fpds
 
 
