@@ -156,3 +156,15 @@ tasks:
         export CC=gcc-11
         export CXX=g++-11
         pip wheel . --verbose
+
+
+  cli:
+    silent: true
+    cmds:
+      - mkdir -p runtime
+      - touch runtime/.bash_history
+      - docker compose run --rm grabber bash
+
+  split:
+    cmds:
+      - splitfolders --ratio .9 .1 .0 --move --output output input

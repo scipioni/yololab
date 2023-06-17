@@ -48,19 +48,91 @@ class NetOnnx(Net):
         super().__init__(config)
 
         self.model: cv.dnn.Net = cv.dnn.readNetFromONNX(config.model)
-
+        self.model.setPreferableBackend(cv.dnn.DNN_BACKEND_CUDA)
+        self.model.setPreferableTarget(cv.dnn.DNN_TARGET_CUDA)
+        # self.net = cv.dnn_DetectionModel(self.model)
+        # self.net.setInputParams(
+        #             size=(640, 640),
+        #             mean=(0, 0, 0),
+        #             scale=1.0 / 255.0,
+        #             swapRB=True,
+        #             crop=True,
+        #         )
 
     def predict(self, frame):
+        # confThreshold = 0.1
+        # nmsThreshold = 0.4
+
+        # classIds, confidences, boxes = self.net.detect(
+        #     frame, confThreshold, nmsThreshold
+        # )
+
+        # return
+
+
         h, w = frame.shape[:2]
         length = max((h, w))
         scale = length/ 640
         image = np.zeros((length, length, 3), np.uint8)
         image[0:h, 0:w] = frame
-        blob = cv.dnn.blobFromImage(image, scalefactor=1 / 255, size=(640, 640), swapRB=True)
+        blob = cv.dnn.blobFromImage(image, scalefactor=1.0 / 255, size=(640, 640), swapRB=True, crop=True)
         self.model.setInput(blob)
         outputs = self.model.forward()
+
         self.frame = frame
         self.frame_dirty = None
+
+
+        # outputs = outputs.transpose((0, 2, 1))
+
+        # class_ids, confs, boxes = list(), list(), list()
+
+        # image_height, image_width, _ = frame.shape
+        # x_factor = image_width / 640
+        # y_factor = image_height / 640
+
+        # rows = outputs[0].shape[0]
+
+        # for i in range(rows):
+        #     row = outputs[0][i]
+        #     conf = row[4]
+            
+        #     classes_score = row[4:]
+        #     _,_,_, max_idx = cv.minMaxLoc(classes_score)
+        #     class_id = max_idx[1]
+        #     if (classes_score[class_id] > .25):
+        #         confs.append(conf)
+        #         label = CLASSES[int(class_id)]
+        #         class_ids.append(label)
+                
+        #         #extract boxes
+        #         x, y, w, h = row[0].item(), row[1].item(), row[2].item(), row[3].item() 
+        #         left = int((x - 0.5 * w) * x_factor)
+        #         top = int((y - 0.5 * h) * y_factor)
+        #         width = int(w * x_factor)
+        #         height = int(h * y_factor)
+        #         box = np.array([left, top, width, height])
+        #         boxes.append(box)
+                
+        # r_class_ids, r_confs, r_boxes = list(), list(), list()
+
+        # indexes = cv.dnn.NMSBoxes(boxes, confs, 0.25, 0.45) 
+        # for i in indexes:
+        #     r_class_ids.append(class_ids[i])
+        #     r_confs.append(confs[i])
+        #     r_boxes.append(boxes[i])
+        
+        # self.prepare_show()
+        # for i in indexes:
+        #     box = boxes[i]
+        #     left = box[0]
+        #     top = box[1]
+        #     width = box[2]
+        #     height = box[3]
+            
+        #     cv2.rectangle(self.frame_dirty, (left, top), (left + width, top + height), (0,255,0), 3)
+
+        # return
 
         outputs = np.array([cv.transpose(outputs[0])])
         rows = outputs.shape[1]
