@@ -13,4 +13,4 @@ runs
 .cvenv/
 *.onnx
 .env
-.venv310/runtime
+.venv*
