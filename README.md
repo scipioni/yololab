@@ -28,10 +28,14 @@ pip install -U opencv-python-rolling<5.0.0
 edit ~/.config/Ultralytics/settings.yaml to use <yololab> root dir for `dataset` and `runs` 
 
 
-## test fpds
+## export engine format
 
-train
 ```
+pip install nvidia-tensorrt
+yolo export model=models/yolov8n.pt imgsz=640 format=engine device=0
+```
+
+## test fpds
 
 
 
@@ -55,3 +59,11 @@ https://gram.web.uah.es/data/datasets/fpds/index.html
 dataset for human fall recognition in an uncontrolled environment
 
 https://www.sciencedirect.com/science/article/pii/S2352340922008162
+
+
+
+### VFP290K
+
+```
+dsconvert --sdir datasets/GOPR0802/images/ --ddir datasets/GOPR0802/images/ --iw voc --ow yolo
+```

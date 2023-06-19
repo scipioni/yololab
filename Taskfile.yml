@@ -156,3 +156,26 @@ tasks:
         export CC=gcc-11
         export CXX=g++-11
         pip wheel . --verbose
+
+
+  cli:
+    silent: true
+    cmds:
+      - mkdir -p runtime
+      - touch runtime/.bash_history
+      - docker compose run --rm grabber bash
+
+  split:
+    cmds:
+      - splitfolders --ratio .9 .1 .0 --move --output output input
+
+
+  pt2engine:
+    cmds:
+      # gen pkl
+      - python YOLOv8-TensorRT/gen_pkl.py -w models/yolov8n.pt -o models/yolov8n.pkl
+      # gen engine
+      - python YOLOv8-TensorRT/build.py --weights models/yolov8n.pkl --iou-thres 0.65 --conf-thres 0.25 --topk 100 --fp16 --input-shape 1 3 640 640 --device cuda:0
+  engine:predict:
+    cmds:
+      - python YOLOv8-TensorRT/infer-det.py --engine models/yolov8n.engine --device cuda:0 --imgs samples/fp1.png
