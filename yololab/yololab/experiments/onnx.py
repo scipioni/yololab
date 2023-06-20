@@ -18,6 +18,7 @@ class ObjectDetector:
     def detect_object(self, image_path):
         # Load image
         image = cv2.imread(image_path)
+colors = np.random.uniform(0, 255, size=(max(len(CLASSES),80), 3))
 
         # Preprocess image (if needed) and convert to input tensor
         input_name = self.model.get_inputs()[0].name
