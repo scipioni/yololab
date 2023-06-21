@@ -2,10 +2,10 @@ import shutil
 import os
 import argparse
 
-def main(cartella1, cartella2):
-    for file in os.listdir(cartella1):
+def main(sdir, ddir):
+    for file in os.listdir(sdir):
         if file.endswith('.txt'):
-            shutil.copy(os.path.join(cartella1, file), cartella2)
+            shutil.copy(os.path.join(sdir, file), ddir)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
