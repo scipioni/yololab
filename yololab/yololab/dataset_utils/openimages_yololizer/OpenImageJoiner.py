@@ -63,9 +63,6 @@ class OpenImageJoiner():
             newLabel = '\n'.join(newLabel)
             l.write(newLabel)
 
-    # joinLabel('person/test.txt', 'sofa/')
-    # browseDir('person', 'bed', 'sofa')
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--pdir', default='person')
