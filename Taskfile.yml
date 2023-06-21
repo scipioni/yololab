@@ -179,3 +179,10 @@ tasks:
   engine:predict:
     cmds:
       - python YOLOv8-TensorRT/infer-det.py --engine models/yolov8n.engine --device cuda:0 --imgs samples/fp1.png
+
+
+  publish:all:
+    desc: "publish to private repo, see /lab/yololab/pypiserver/README.md and .pypirc"
+    cmds:
+      - scripts/increment-version.sh yolorun/pyproject.toml bug {{.CLI_ARGS}}
+    silent: true
