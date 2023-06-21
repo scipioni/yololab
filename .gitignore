@@ -14,3 +14,4 @@ runs
 *.onnx
 .env
 .venv*
+detections_sample.csv
