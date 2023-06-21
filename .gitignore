@@ -13,4 +13,5 @@ runs
 .cvenv/
 *.onnx
 .env
-.venv310/runtime
+.venv*
+detections_sample.csv
