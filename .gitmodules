@@ -1,3 +1,12 @@
 [submodule "external/YOLOv8-TensorRT"]
 	path = external/YOLOv8-TensorRT
 	url = https://github.com/triple-Mu/YOLOv8-TensorRT.git
+[submodule "external/dataset-converter"]
+	path = external/dataset-converter
+	url = git@github.com:Spaicrab/dataset-converter.git
+[submodule "external/dataset-analyser"]
+	path = external/dataset-analyser
+	url = git@github.com:frakizan/dataset-analyser.git
+[submodule "external/dataset-dynamic-cropper"]
+	path = external/dataset-dynamic-cropper
+	url = git@github.com:Spaicrab/dataset-dynamic-cropper.git

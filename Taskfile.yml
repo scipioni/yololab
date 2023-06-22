@@ -190,3 +190,12 @@ tasks:
     cmds:
       - scripts/increment-version.sh yolorun/pyproject.toml bug {{.CLI_ARGS}}
     silent: true
+
+  git:init:
+    desc: check out submodules
+    cmds:
+      - git submodule update --init --recursive
+
+  git:sync:
+    cmds:
+      - git pull --recurse-submodules
