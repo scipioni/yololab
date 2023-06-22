@@ -140,8 +140,13 @@ tasks:
 
   test:onxx:
     cmds:
-      - yolo export model=models/yolov8n.pt imgsz=640 format=onnx opset=12
+      - yolo export model=models/yolov8n.pt imgsz=640 format=onnx opset=12 
       - python yololab/yololab/experiments/onxx.py --model models/yolov8n.onnx --img samples/dogs.webp
+  
+  test:onxx3:
+    cmds:
+      - yolo export model=models/yolov8n.pt imgsz=640 format=onnx opset=12 dnn=True simplify=True
+      - python yololab/yololab/experiments/onnx3.py --model models/yolov8n.onnx --image samples/dogs.webp
 
   test:grabber:
     cmds:
