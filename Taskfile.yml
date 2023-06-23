@@ -122,7 +122,8 @@ tasks:
       - |
         # https://docs.ultralytics.com/usage/cfg/
         export YOLO_CONFIG_DIR=~/.config/Ultralytics/
-        yolo detect train project=models name=fp data=/run/media/scipio/DATASET/datasets/fp.yaml model=models/yolov8s.pt pretrained=true exist_ok=true imgsz=640 epochs=100 batch=-1 lr0=0.01 resume=True
+        yolo detect train project=models name=fp data=/archive/dataset/fp.yaml model=models/yolov8n.pt pretrained=true exist_ok=true imgsz=640 epochs=100 batch=-1 lr0=0.01 
+      #resume=True
         #yolo export model=models/fp/weights/best.pt imgsz=640 format=onnx opset=12
     
   test:train:mini:
