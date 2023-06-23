@@ -3,7 +3,6 @@
 /models
 .venv
 *.pt
-models
 notebooks
 checkpoints
 samples
@@ -16,3 +15,5 @@ runs
 .venv310/runtime
 .venv310/
 venv310/
+.venv*
+detections_sample.csv

@@ -3,63 +3,91 @@
 
 from .yolov8.engine import TRTModule  # isort:skip
 import argparse
+import asyncio
+import logging
+import time
 from pathlib import Path
 
-import cv2
-import torch
-import time
+import cv2 as cv
+#import torch
 
 from .config import CLASSES, COLORS
-from .yolov8.torch_utils import det_postprocess
-from .yolov8.utils import blob, letterbox, path_to_list
-from .grabber import Grabber, DummyGrabber, FileGrabber, WebcamGrabber
-import logging
-import asyncio
+from .grabber import DummyGrabber, FileGrabber, Grabber, WebcamGrabber
+# from .yolov8.torch_utils import det_postprocess
+# from .yolov8.utils import blob, letterbox, path_to_list
+
+log = logging.getLogger(__name__)
+
+from . import models
+
+
+
+
+# async def grab(config, grabber: Grabber) -> None:
+#     device = torch.device(config.device)
+#     engine = TRTModule(config.model, device)
+#     H, W = engine.inp_info[0].shape[-2:]
+#     engine.set_desired(["num_dets", "bboxes", "scores", "labels"])
+
+#     while True:
+#         try:
+#             frame, filename = await grabber.get()
+#         except Exception as e:
+#             log.error(e)
+#             continue
+
+#         if frame is None:
+#             break
+
+#         if config.show:
+#             draw = frame.copy()
+#         frame, ratio, dwdh = letterbox(frame, (W, H))
+#         rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+#         tensor = blob(rgb, return_seg=False)
+#         dwdh = torch.asarray(dwdh * 2, dtype=torch.float16, device=device)
+#         tensor = torch.asarray(tensor, device=device)
+#         # inference
+#         data = engine(tensor)
+
+#         bboxes, scores, labels = det_postprocess(data)
+#         bboxes -= dwdh
+#         bboxes /= ratio
+
+#         for bbox, score, label in zip(bboxes, scores, labels):
+#             bbox = bbox.round().int().tolist()
+#             cls_id = int(label)
+#             cls = CLASSES[cls_id]
+
+#             if config.show:
+#                 color = COLORS[cls]
+#                 cv2.rectangle(draw, bbox[:2], bbox[2:], color, 2)
+#                 cv2.putText(
+#                     draw,
+#                     f"{cls}:{score:.3f}",
+#                     (bbox[0], bbox[1] - 2),
+#                     cv2.FONT_HERSHEY_SIMPLEX,
+#                     0.75,
+#                     [225, 255, 255],
+#                     thickness=2,
+#                 )
+
+#         if config.show:
+#             cv2.imshow("result", draw)
+#             cv2.waitKey(1)
+
 
 async def grab(config, grabber: Grabber) -> None:
-    device = torch.device(config.device)
-    engine = TRTModule(config.model, device)
-    H, W = engine.inp_info[0].shape[-2:]
 
-    # set desired output names order
-    engine.set_desired(['num_dets', 'bboxes', 'scores', 'labels'])
-    #bgr = cv2.imread(str(config.imgs))
-    
-    # i = 0
-    # while True:
-    #     start_time = time.time() # start time of the loop
+    model = models.getModel(config)
 
-    #     draw = bgr.copy()
-    #     bgr, ratio, dwdh = letterbox(bgr, (W, H))
-    #     rgb = cv2.cvtColor(bgr, cv2.COLOR_BGR2RGB)
-    #     tensor = blob(rgb, return_seg=False)
-    #     dwdh = torch.asarray(dwdh * 2, dtype=torch.float32, device=device)
-    #     tensor = torch.asarray(tensor, device=device)
-    #     # inference
-    #     data = engine(tensor)
+    #model = YOLO(config.model)
+    #results = model.predict(source="folder", show=True) # Display preds. Accepts all YOLO predict arguments
 
-    #     bboxes, scores, labels = det_postprocess(data)
-    #     bboxes -= dwdh
-    #     bboxes /= ratio
 
-    #     for (bbox, score, label) in zip(bboxes, scores, labels):
-    #         bbox = bbox.round().int().tolist()
-    #         cls_id = int(label)
-    #         cls = CLASSES[cls_id]
-    #         color = COLORS[cls]
-    #         cv2.rectangle(draw, bbox[:2], bbox[2:], color, 2)
-    #         cv2.putText(draw,
-    #                     f'{cls}:{score:.3f}', (bbox[0], bbox[1] - 2),
-    #                     cv2.FONT_HERSHEY_SIMPLEX,
-    #                     0.75, [225, 255, 255],
-    #                     thickness=2)
-    #     i =+ 1
-    #     if i % 1 == 0:
-    #         print("FPS: ", int(1.0 / (time.time() - start_time))) # FPS = 1 / time to process loop
-    #     cv2.imshow('result', draw)
-    #     cv2.waitKey(1)
-    #     # else:
-    #     #     cv2.imwrite(str(save_image), draw)
+    # from ndarray
+    #im2 = cv2.imread("bus.jpg")
+
+
 
     while True:
         try:
@@ -70,40 +98,14 @@ async def grab(config, grabber: Grabber) -> None:
 
         if frame is None:
             break
-        
-        frame, ratio, dwdh = letterbox(frame, (W, H))
-        rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        tensor = blob(rgb, return_seg=False)
-        dwdh = torch.asarray(dwdh * 2, dtype=torch.float32, device=device)
-        tensor = torch.asarray(tensor, device=device)
-        # inference
-        data = engine(tensor)
 
-        bboxes, scores, labels = det_postprocess(data)
-        bboxes -= dwdh
-        bboxes /= ratio
+        #if config.show:
+        #    draw = frame.copy()
+        ###results = model.predict(source=frame, show=True)  # save predictions as labels
+        #results = model(frame, verbose=False)
+        model.predict(frame)
 
 
-        if config.show:
-            draw = frame.copy()
-
-        for (bbox, score, label) in zip(bboxes, scores, labels):
-            bbox = bbox.round().int().tolist()
-            cls_id = int(label)
-            cls = CLASSES[cls_id]
-            
-            if config.show:
-                color = COLORS[cls]
-                cv2.rectangle(draw, bbox[:2], bbox[2:], color, 2)
-                cv2.putText(draw,
-                            f'{cls}:{score:.3f}', (bbox[0], bbox[1] - 2),
-                            cv2.FONT_HERSHEY_SIMPLEX,
-                            0.75, [225, 255, 255],
-                            thickness=2)
-
-        if config.show:
-            cv2.imshow('result', draw)
-            cv2.waitKey(1)
 
 # def parse_config() -> argparse.Namespace:
 #     parser = argparse.ArgumentParser()
@@ -121,6 +123,7 @@ async def grab(config, grabber: Grabber) -> None:
 
 def main():
     from .config import get_config
+
     config = get_config()
 
     if config.dummy:
@@ -134,5 +137,6 @@ def main():
     loop.run_until_complete(grab(config, grabber))
     loop.close()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()

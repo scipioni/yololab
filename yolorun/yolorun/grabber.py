@@ -172,7 +172,7 @@ class FileGrabber(Grabber):
             if filename[0] != "/":
                 files[index] = filename #os.path.join(self.config.path, filename)
 
-        if files and (".jpg" not in files[0] and ".png" not in files[0]):
+        if files and (".mp4" in files[0] or ".mkv" in files[0]):
             self.video = files[0]
         self.files = files
 
@@ -201,7 +201,7 @@ class FileGrabber(Grabber):
 
     async def get(self, key=None):
         (do_continue, buff) = super().get(key=key)
-        self.isNew = False
+        self.isNew = self.current_frame is None
         if not do_continue:
             return (None, "")
 
@@ -233,19 +233,18 @@ class FileGrabber(Grabber):
             if self.key in ("i",):
                 log.info("filename: path=%s shape=%s", self.video, self.current_frame.shape)
         elif 0 <= self.current < len(self.files):
-            with timing("cv.imread"):
-                # https://github.com/libvips/pyvips/issues/179#issuecomment-618936358
-                img = cv.imread(self.files[self.current], cv.IMREAD_COLOR)
-            if self.grey:
-                img = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
-            self.current_frame = img
+            if self.isNew:
+                with timing("cv.imread"):
+                    # https://github.com/libvips/pyvips/issues/179#issuecomment-618936358
+                    img = cv.imread(self.files[self.current])
+                if self.grey:
+                    img = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+                self.current_frame = img
             if self.key in ("i",):
                 log.info("filename: path=%s shape=%s", self.files[self.current], self.current_frame.shape)
-        
         else:
-            #if self.config.threads:
-            #self.cap.stop()
             return (None, "")
+
         if self.key in ("s",):
             filename = os.path.join(
                 self.config.save_path, "%s.jpg" % int(time.time() * 1000)
