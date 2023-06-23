@@ -14,3 +14,5 @@ runs
 *.onnx
 .env
 .venv310/runtime
+.venv310/
+venv310/
