@@ -1,15 +1,15 @@
 
 [project]
 name = "yolorun"
-version = "0.1.3"
+version = "0.1.4"
 description = ""
 authors = [
     {name = "Stefano Scipioni", email = "stefano.scipioni@csgalileo.net"},
 ]
 dependencies = [
-    "tensorrt>=8.6.1",
+    #"tensorrt>=8.6.1",
     "configargparse>=1.5.3",
-    "torch>=2.0.1",
+    #"torch>=2.0.1",
     "opencv-python>=4.7.0.72",
 ]
 requires-python = ">=3.10"
