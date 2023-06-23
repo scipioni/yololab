@@ -8,17 +8,17 @@ import logging
 import time
 from pathlib import Path
 
-import cv2
-import torch
+import cv2 as cv
+#import torch
 
 from .config import CLASSES, COLORS
 from .grabber import DummyGrabber, FileGrabber, Grabber, WebcamGrabber
-from .yolov8.torch_utils import det_postprocess
-from .yolov8.utils import blob, letterbox, path_to_list
+# from .yolov8.torch_utils import det_postprocess
+# from .yolov8.utils import blob, letterbox, path_to_list
 
 log = logging.getLogger(__name__)
 
-
+from . import models
 
 
 
@@ -77,9 +77,10 @@ log = logging.getLogger(__name__)
 
 
 async def grab(config, grabber: Grabber) -> None:
-    from ultralytics import YOLO
 
-    model = YOLO(config.model)
+    model = models.getModel(config)
+
+    #model = YOLO(config.model)
     #results = model.predict(source="folder", show=True) # Display preds. Accepts all YOLO predict arguments
 
 
@@ -100,8 +101,9 @@ async def grab(config, grabber: Grabber) -> None:
 
         #if config.show:
         #    draw = frame.copy()
-        #results = model.predict(source=frame, show=True)  # save predictions as labels
-        results = model(frame)
+        ###results = model.predict(source=frame, show=True)  # save predictions as labels
+        #results = model(frame, verbose=False)
+        model.predict(frame)
 
 
 
