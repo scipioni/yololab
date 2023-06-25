@@ -22,7 +22,7 @@ class Model:
             dim = (int(w * scale), int(h * scale))
             frame = cv.resize(frame, dim, interpolation=cv.INTER_AREA)
         cv.imshow(self.config.model, frame)
-        cv.waitKey(1)
+        #cv.waitKey(1)
 
 
 def getModel(config):

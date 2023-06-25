@@ -12,7 +12,7 @@ import cv2 as cv
 #import torch
 
 from .config import CLASSES, COLORS
-from .grabber import DummyGrabber, FileGrabber, Grabber, WebcamGrabber
+from .grabber import DummyGrabber, FileGrabber, Grabber, WebcamGrabber, RtspGrabber
 # from .yolov8.torch_utils import det_postprocess
 # from .yolov8.utils import blob, letterbox, path_to_list
 
@@ -31,7 +31,7 @@ async def grab(config, grabber: Grabber) -> None:
             frame, filename = await grabber.get()
         except Exception as e:
             log.error(e)
-            continue
+            break
 
         if frame is None:
             break
@@ -49,7 +49,10 @@ def main():
     if config.dummy:
         grabber = DummyGrabber(config)
     elif config.images:
-        grabber = FileGrabber(config, config.images)
+        if "rtsp" in config.images[0]:
+            grabber = RtspGrabber(config)
+        else:
+            grabber = FileGrabber(config, config.images)
     else:
         grabber = WebcamGrabber(config)
 

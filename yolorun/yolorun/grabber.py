@@ -106,7 +106,6 @@ class Grabber:
             key = cv.waitKey(1) & 0xFF
         if key:
             self.key = chr(key)
-
         if key in (ord("q"), 27):
             return (None, "")
         elif key in (ord("h"),):
@@ -153,6 +152,32 @@ class WebcamGrabber(Grabber):
         ret, frame = self._vid.read()
         if not ret:
             return None
+        return (frame, self.counter)
+
+class RtspGrabber(Grabber):
+    name = "rtsp"
+
+    def __init__(self, config):
+        super().__init__(config)
+        self._vid = None
+
+    async def get(self, key=None):
+        (do_continue, buff) = super().get(key=key)
+        if not do_continue:
+            return (None, self.counter)
+        if not self._vid:
+
+            # connection_string = f"""rtspsrc location={self.config.url} protocols={self.config.protocol} latency=0 ! rtph264depay ! h264parse ! tee name=h264 
+            #     h264. ! queue ! {self.config.decoder} ! videorate ! video/x-raw,framerate={framerate}/{divisor} ! videoconvert ! video/x-raw, format=BGR  ! videoconvert ! appsink drop=true
+            #     """  
+            url = self.config.images[0]
+            self._vid = cv.VideoCapture(f"rtspsrc location={url} protocols=tcp latency=0 ! decodebin ! videoconvert ! video/x-raw,format=BGR ! appsink drop=1", cv.CAP_GSTREAMER)
+            if not self._vid.isOpened():
+                return (None, self.counter)
+            log.info("... OK, connected")
+        ret, frame = self._vid.read()
+        if not ret:
+            return (None, self.counter)
         return (frame, self.counter)
 
 
@@ -219,6 +244,8 @@ class FileGrabber(Grabber):
             self.config.save = not self.config.save
         elif self.key in ("p", ","):
             self.current -= 1
+        elif self.key in ("c",):
+            self.config.step = not self.config.step
 
         if self.video:
             if self.current_video != self.current:

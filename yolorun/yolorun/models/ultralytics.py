@@ -27,15 +27,18 @@ class ModelYolo(Model):
 
         for box in self.boxes:
             r = box.xyxy[0].astype(int)
-            cv.rectangle(self.frame_dirty, r[:2], r[2:], (255, 255, 255), 2, lineType=cv.LINE_AA)
+            color = (255,255,255)
             cls = int(box.cls[0])
+            if cls > 0:
+                color = (0,0,255)
+            cv.rectangle(self.frame_dirty, r[:2], r[2:], color, 2, lineType=cv.LINE_AA)
             cv.putText(
                 self.frame_dirty,
                 f"{cls}",
                 (r[0], r[1]),
                 0,
                 0.9,
-                [85, 45, 255],
+                color,
                 2,
                 lineType=cv.LINE_AA
             )
