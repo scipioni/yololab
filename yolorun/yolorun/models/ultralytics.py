@@ -20,7 +20,8 @@ class ModelYolo(Model):
         self.boxes = []
         for result in results:
             for box in result.boxes.cpu().numpy():
-                self.boxes.append(box)
+                if box.conf[0] > self.config.confidence_min:
+                    self.boxes.append(box)
 
     def show(self, scale=1.0):
         self.prepare_show()
@@ -31,14 +32,24 @@ class ModelYolo(Model):
             cls = int(box.cls[0])
             if cls > 0:
                 color = (0,0,255)
+
+            confidence = round(box.conf[0] * 100)
+            label = f"{cls} {confidence:02}%"
+            fsize, _ = cv.getTextSize(label, cv.FONT_HERSHEY_SIMPLEX, 1.0, 2)
+            fw, fh = fsize
+            delta = 2
+
+            x1,y1,x2,y2 = r[:4]
             cv.rectangle(self.frame_dirty, r[:2], r[2:], color, 2, lineType=cv.LINE_AA)
+            cv.rectangle(self.frame_dirty, (x1, y1-fh-2*delta), (x2, y1), color, -1)
+            
             cv.putText(
                 self.frame_dirty,
-                f"{cls}",
-                (r[0], r[1]),
+                label,
+                (r[0], r[1]-delta),
                 0,
                 0.9,
-                color,
+                (0,0,0),
                 2,
                 lineType=cv.LINE_AA
             )

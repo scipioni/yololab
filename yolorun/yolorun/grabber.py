@@ -378,11 +378,7 @@ class FileGrabber(Grabber):
             self.isNew = True
 
         if self.video:
-            return self.current_frame, "%s-%d.jpg" % (
-                os.path.basename(self.video).split(".")[0],
-                self.current,
-                []
-            )
+            return self.current_frame, "%s-%d.jpg" % (os.path.basename(self.video).split(".")[0], self.current), []
         else:
             return self.current_frame, self.files[self.current], self.current_bboxes
 
