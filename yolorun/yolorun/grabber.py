@@ -43,14 +43,17 @@ import signal
 import socket
 import struct
 import time
-from distutils.command.config import config
+import shutil
+#from distutils.command.config import config
 from multiprocessing import Process, Queue
 from multiprocessing.shared_memory import SharedMemory
+#from pathlib import Path
 
 import configargparse
 import cv2 as cv
 import numpy as np
 from shared_ndarray2 import SharedNDArray
+from .timing import timing
 
 try:
     from pypylon import genicam, pylon
@@ -77,10 +80,20 @@ class BBox:
         ymin = int(round(max(0, (yc - hf / 2.0) * float(h))))
         self.box = (xmin, ymin, xmax - xmin + 1, ymax - ymin + 1)
 
-class BBoxes:
-    def __init__(self, bboxes=[]):
-        self.bboxes = bboxes
+    def __repr__(self):
+        return f"class={self.classId} box={self.box}"
 
+class BBoxes:
+    def __init__(self):
+        self.bboxes = [] #bboxes
+        self.id = time.time()
+
+    def __repr__(self):
+        result = [f"bboxes={self.id}"]
+        for box in self.bboxes:
+            result.append(str(box))
+        return "\n".join(result)
+    
     def add(self, bbox: BBox):
         self.bboxes.append(bbox)
 
@@ -93,6 +106,14 @@ class BBoxes:
             if bbox.classId == classId:
                 return True
         return False
+    
+    def hasOnly(self, classId):
+    
+        for bbox in self.bboxes:
+            #print(classId, bbox.classId, classId!=bbox.classId)
+            if bbox.classId != classId:
+                return False
+        return True
 
     def import_txt(self, txtfile, w, h, classes={}):
         if not os.path.exists(txtfile):
@@ -172,6 +193,10 @@ class Grabber:
     def close(self):
         log.info("close")
 
+    def move(self, filename, path):
+        log.info("move %s to %s", filename, path)
+        for f in glob.glob(filename.split(".")[0] + ".*"):
+            shutil.move(f, path)
 
 class DummyGrabber(Grabber):
     name = "dummy"
@@ -250,17 +275,22 @@ class FileGrabber(Grabber):
 
         if files and (".mp4" in files[0] or ".mkv" in files[0] or ".mov" in files[0]):
             self.video = files[0]
-        self.files = files
+            log.info("video detected: %s" % self.video)
+        else:
+            with timing("glob", count=1):
+                if files and "*" in files[0]:
+                    files = [f for f in glob.iglob(files[0])]
+
+            self.files = files
+            log.info("detected %d files", len(files))
 
         if self.video:
-            log.info("video detected: %s" % self.video)
-
             self.cap = cv.VideoCapture(self.video)
         else:
             self.cap = None
 
         self.current_frame = None
-        self.current_bboxes = []
+        self.current_bboxes = None
 
     # def getBboxes(self, classes):
     #     if self.current_frame is None or self.video:
@@ -298,7 +328,6 @@ class FileGrabber(Grabber):
         elif self.key in ("c",):
             self.config.step = not self.config.step
 
-        bboxes = BBoxes()
         if self.video:
             if self.current_video != self.current:
                 ret, img = self.cap.read()
@@ -317,17 +346,21 @@ class FileGrabber(Grabber):
                     # https://github.com/libvips/pyvips/issues/179#issuecomment-618936358
                     filename = self.files[self.current]
                     img = cv.imread(filename)
+                    if img is None:
+                        return (None, "", None)
+                    #img = np.zeros((1, 1, 1), np.uint8)
                     filetxt = filename.split(".")[0] + ".txt"
 
                     h,w = img.shape[:2]
-                    bboxes.import_txt(filetxt, w, h)
+                    self.current_bboxes = BBoxes()
+                    self.current_bboxes.import_txt(filetxt, w, h)
                 if self.grey:
                     img = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
                 self.current_frame = img
             if self.key in ("i",):
                 log.info("filename: path=%s shape=%s", self.files[self.current], self.current_frame.shape)
         else:
-            return (None, "", bboxes)
+            return (None, "", self.current_bboxes)
 
         if self.key in ("s",):
             filename = os.path.join(
@@ -351,7 +384,7 @@ class FileGrabber(Grabber):
                 []
             )
         else:
-            return self.current_frame, self.files[self.current], bboxes
+            return self.current_frame, self.files[self.current], self.current_bboxes
 
 
 class DcamGrabber(Grabber):

@@ -35,12 +35,25 @@ async def grab(config, grabber: Grabber, model: models.Model) -> None:
         if frame is None:
             break
 
-        if config.filter_class:
-            for classId in config.filter_class.split(","):
+        if config.filter_classes:
+            for classId in config.filter_classes:
                 if bboxes.has(classId):
-                    print("match")
+                    #config.step = True
+                    config.show = True
+                    print(f"not match {filename} on {classId}")
+                else:
+                    config.show = False
 
-        #print(bboxes)
+        if config.filter_classes_strict:
+             for classId in config.filter_classes_strict:
+                #print(bboxes )            
+                if bboxes.hasOnly(classId):
+                    if config.move:
+                        grabber.move(filename, config.move)
+                        
+
+                    #config.show = True
+
 
         #print(config.filter_class)
         model.predict(frame)

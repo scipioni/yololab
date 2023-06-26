@@ -40,7 +40,8 @@ def get_config() -> Any:
                         default='cuda:0',
                         help='TensorRT infer device')
 
-    parser.add_argument("--filter-class", default="", help="match given classes, for example 0,1,...")
+    parser.add_argument("--filter-classes", default="", help="match given classes, for example 0,1,...")
+    parser.add_argument("--filter-classes-strict", default="", help="match given classes, for example 0,1,...")
     # parser.add_argument("--inference", action="store_true", default=False)
     # parser.add_argument("--nano", action="store_true", default=True)
     # parser.add_argument("--custom", action="store_true", default=False)
@@ -104,12 +105,18 @@ def get_config() -> Any:
     # )
     # parser.add_argument("--legacy", action="store_true", default=False, help="test legacy code")
     # parser.add_argument("--check-shm", type=int, default=30, help="check shm allocation every n frames; 0 disable check")
+    parser.add_argument("--move", default="", help="move files to <path>")
 
     config = parser.parse_args()
     logging.basicConfig(
         format="%(asctime)s [%(levelname)s] %(name)s %(message)s",
         level="DEBUG" if config.debug else "INFO",
     )
+
+    if config.filter_classes:
+        config.filter_classes = [int(cls) for cls in config.filter_classes]
+    if config.filter_classes_strict:
+        config.filter_classes_strict = [int(cls) for cls in config.filter_classes_strict]
 
     return config
 
