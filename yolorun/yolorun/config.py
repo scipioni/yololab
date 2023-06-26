@@ -30,7 +30,7 @@ def get_config() -> Any:
     parser.add_argument("--step", action="store_true", default=False)
 
     #parser.add_argument("--models", default="./models", help="models repo")
-    parser.add_argument("--model", default="models/yolov8n.engine", help="model name")
+    parser.add_argument("--model", default="", help="model name")
     parser.add_argument("--show-ann", action="store_true", default=False, help="show annotator info")
     parser.add_argument("--url", default="", help="camera url, for example rtsp://10.1.16.107:554/s0")
     parser.add_argument("--confidence-min", type=float, default=0.9)
@@ -40,6 +40,7 @@ def get_config() -> Any:
                         default='cuda:0',
                         help='TensorRT infer device')
 
+    parser.add_argument("--filter-class", default="", help="match given classes, for example 0,1,...")
     # parser.add_argument("--inference", action="store_true", default=False)
     # parser.add_argument("--nano", action="store_true", default=True)
     # parser.add_argument("--custom", action="store_true", default=False)

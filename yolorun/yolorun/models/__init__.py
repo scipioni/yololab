@@ -6,6 +6,7 @@ log = logging.getLogger(__name__)
 class Model:
     def __init__(self, config):
         self.config = config
+        log.info("initialized model %s", self.__class__)
 
     def predict(self, frame):
         self.frame = frame
@@ -25,10 +26,16 @@ class Model:
         #cv.waitKey(1)
 
 
+
+class ModelDummy(Model):
+    pass
+
 def getModel(config):
     if ".pt" in config.model:
         from .ultralytics import ModelYolo
         return ModelYolo(config)
+
+    return ModelDummy(config)
 
     log.error("no model for %s", config.model)
     

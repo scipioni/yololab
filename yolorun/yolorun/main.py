@@ -23,19 +23,26 @@ from . import models
 
 #out = cv2.VideoWriter('output.mp4', fourcc, fps,(frame_width,frame_height),True )
 
-async def grab(config, grabber: Grabber) -> None:
-    model = models.getModel(config)
-
+async def grab(config, grabber: Grabber, model: models.Model) -> None:
     while True:
         try:
-            frame, filename = await grabber.get()
+            frame, filename, bboxes = await grabber.get()
         except Exception as e:
             log.error(e)
+            raise
             break
 
         if frame is None:
             break
 
+        if config.filter_class:
+            for classId in config.filter_class.split(","):
+                if bboxes.has(classId):
+                    print("match")
+
+        #print(bboxes)
+
+        #print(config.filter_class)
         model.predict(frame)
         if config.show:
             model.show()
@@ -56,8 +63,10 @@ def main():
     else:
         grabber = WebcamGrabber(config)
 
+    model = models.getModel(config)
+
     loop = asyncio.get_event_loop()
-    loop.run_until_complete(grab(config, grabber))
+    loop.run_until_complete(grab(config, grabber, model))
     loop.close()
 
 

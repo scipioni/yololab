@@ -66,6 +66,57 @@ from . import aioudp
 log = logging.getLogger(__name__)
 
 
+class BBox:
+    confidence = 1.0
+
+    def __init__(self, classId, xc, yc, wf, hf, w, h):
+        self.classId = int(classId)
+        xmax = int(round((wf / 2.0 + xc) * float(w)))
+        xmin = int(round(max(0, (xc - wf / 2.0) * float(w))))
+        ymax = int(round((hf / 2.0 + yc) * float(h)))
+        ymin = int(round(max(0, (yc - hf / 2.0) * float(h))))
+        self.box = (xmin, ymin, xmax - xmin + 1, ymax - ymin + 1)
+
+class BBoxes:
+    def __init__(self, bboxes=[]):
+        self.bboxes = bboxes
+
+    def add(self, bbox: BBox):
+        self.bboxes.append(bbox)
+
+    def extend(self, bboxes):
+        for box in bboxes:
+            self.add(box)
+
+    def has(self, classId):
+        for bbox in self.bboxes:
+            if bbox.classId == classId:
+                return True
+        return False
+
+    def import_txt(self, txtfile, w, h, classes={}):
+        if not os.path.exists(txtfile):
+            return []
+        data = open(txtfile).readlines()
+        for obj in data:
+            classId, xc, yc, wf, hf = map(float, obj.strip().split(" "))
+            self.bboxes.append(BBox(classId, xc, yc, wf, hf, w, h))
+            # classId = int(classId)
+            # xmax = int(round((wf / 2.0 + xc) * float(w)))
+            # xmin = int(round(max(0, (xc - wf / 2.0) * float(w))))
+            # ymax = int(round((hf / 2.0 + yc) * float(h)))
+            # ymin = int(round(max(0, (yc - hf / 2.0) * float(h))))
+            # bboxes.append(
+            #     {
+            #         "classId": classId,
+            #         "confidence": 1.0,
+            #         "box": (xmin, ymin, xmax - xmin + 1, ymax - ymin + 1),
+            #         "name": classes.get(classId, "noname"),
+            #     }
+            # )
+        return self.bboxes
+
+
 class Grabber:
     name = "generic"
 
@@ -96,7 +147,7 @@ class Grabber:
                 self.fps_mean * ((self.counter - 1) / self.counter) + fps / self.counter
             )
         self._started_at = time.time()
-        if self.counter % (5 * int(self.fps_mean)) == 0:  # ogni 5 secondi circa
+        if self.counter % (2 * int(self.fps_mean)) == 0:  # ogni 2 secondi circa
             log.info(
                 "camera-id=%s %.1f FPS (mean %.1f) "
                 % (self.config.camera_id, fps, self.fps_mean)
@@ -113,7 +164,7 @@ class Grabber:
         elif self.key in ("d",):
             self.config.debug = not self.config.debug
 
-        return (True, key)
+        return (True, key, [])
 
     def getBboxes(self, classes):
         return []
@@ -131,8 +182,8 @@ class DummyGrabber(Grabber):
     async def get(self, key=None):
         (do_continue, buff) = super().get(key=key)
         if not do_continue:
-            return (None, "")
-        return (np.zeros((2048, 1024, 1), np.uint8), self.counter)
+            return (None, "", [])
+        return (np.zeros((2048, 1024, 1), np.uint8), self.counter, [])
 
 
 class WebcamGrabber(Grabber):
@@ -145,14 +196,14 @@ class WebcamGrabber(Grabber):
     async def get(self, key=None):
         (do_continue, buff) = super().get(key=key)
         if not do_continue:
-            return (None, "")
+            return (None, "", [])
         if not self._vid:
             self._vid = cv.VideoCapture(self.config.url or 0)
 
         ret, frame = self._vid.read()
         if not ret:
-            return None
-        return (frame, self.counter)
+            return (None, "", [])
+        return (frame, self.counter, [])
 
 class RtspGrabber(Grabber):
     name = "rtsp"
@@ -164,7 +215,7 @@ class RtspGrabber(Grabber):
     async def get(self, key=None):
         (do_continue, buff) = super().get(key=key)
         if not do_continue:
-            return (None, self.counter)
+            return (None, self.counter, [])
         if not self._vid:
 
             # connection_string = f"""rtspsrc location={self.config.url} protocols={self.config.protocol} latency=0 ! rtph264depay ! h264parse ! tee name=h264 
@@ -173,12 +224,12 @@ class RtspGrabber(Grabber):
             url = self.config.images[0]
             self._vid = cv.VideoCapture(f"rtspsrc location={url} protocols=tcp latency=0 ! decodebin ! videoconvert ! video/x-raw,format=BGR ! appsink drop=1", cv.CAP_GSTREAMER)
             if not self._vid.isOpened():
-                return (None, self.counter)
+                return (None, self.counter, [])
             log.info("... OK, connected")
         ret, frame = self._vid.read()
         if not ret:
-            return (None, self.counter)
-        return (frame, self.counter)
+            return (None, self.counter, [])
+        return (frame, self.counter, [])
 
 
 class FileGrabber(Grabber):
@@ -197,7 +248,7 @@ class FileGrabber(Grabber):
             if filename[0] != "/":
                 files[index] = filename #os.path.join(self.config.path, filename)
 
-        if files and (".mp4" in files[0] or ".mkv" in files[0]):
+        if files and (".mp4" in files[0] or ".mkv" in files[0] or ".mov" in files[0]):
             self.video = files[0]
         self.files = files
 
@@ -211,24 +262,24 @@ class FileGrabber(Grabber):
         self.current_frame = None
         self.current_bboxes = []
 
-    def getBboxes(self, classes):
-        if self.current_frame is None or self.video:
-            return []
-        (h, w) = self.current_frame.shape[:2]
-        bboxes = get_bboxes(
-            self.files[self.current].replace(".jpg", ".xml"), classes=classes
-        )
-        if not bboxes:
-            bboxes = get_bboxes_txt(
-                self.files[self.current].replace(".jpg", ".txt"), w, h, classes=classes
-            )
-        return bboxes
+    # def getBboxes(self, classes):
+    #     if self.current_frame is None or self.video:
+    #         return []
+    #     (h, w) = self.current_frame.shape[:2]
+    #     bboxes = get_bboxes(
+    #         self.files[self.current].replace(".jpg", ".xml"), classes=classes
+    #     )
+    #     if not bboxes:
+    #         bboxes = get_bboxes_txt(
+    #             self.files[self.current].replace(".jpg", ".txt"), w, h, classes=classes
+    #         )
+    #     return bboxes
 
     async def get(self, key=None):
-        (do_continue, buff) = super().get(key=key)
+        (do_continue, buff, _) = super().get(key=key)
         self.isNew = self.current_frame is None
         if not do_continue:
-            return (None, "")
+            return (None, "", [])
 
         if not (self.config.show and self.config.step):
             self.current += 1
@@ -247,11 +298,12 @@ class FileGrabber(Grabber):
         elif self.key in ("c",):
             self.config.step = not self.config.step
 
+        bboxes = BBoxes()
         if self.video:
             if self.current_video != self.current:
                 ret, img = self.cap.read()
                 if img is None:
-                    return (None, "")
+                    return (None, "", [])
                 # self.current += 1
                 if self.grey:
                     img = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
@@ -263,14 +315,19 @@ class FileGrabber(Grabber):
             if self.isNew:
                 with timing("cv.imread"):
                     # https://github.com/libvips/pyvips/issues/179#issuecomment-618936358
-                    img = cv.imread(self.files[self.current])
+                    filename = self.files[self.current]
+                    img = cv.imread(filename)
+                    filetxt = filename.split(".")[0] + ".txt"
+
+                    h,w = img.shape[:2]
+                    bboxes.import_txt(filetxt, w, h)
                 if self.grey:
                     img = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
                 self.current_frame = img
             if self.key in ("i",):
                 log.info("filename: path=%s shape=%s", self.files[self.current], self.current_frame.shape)
         else:
-            return (None, "")
+            return (None, "", bboxes)
 
         if self.key in ("s",):
             filename = os.path.join(
@@ -288,12 +345,13 @@ class FileGrabber(Grabber):
             self.isNew = True
 
         if self.video:
-            return self.current_frame.copy(), "%s-%d.jpg" % (
+            return self.current_frame, "%s-%d.jpg" % (
                 os.path.basename(self.video).split(".")[0],
                 self.current,
+                []
             )
         else:
-            return self.current_frame.copy(), self.files[self.current]
+            return self.current_frame, self.files[self.current], bboxes
 
 
 class DcamGrabber(Grabber):
