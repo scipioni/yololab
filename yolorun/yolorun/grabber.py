@@ -72,13 +72,20 @@ log = logging.getLogger(__name__)
 class BBox:
     confidence = 1.0
 
-    def __init__(self, classId, xc, yc, wf, hf, w, h):
+    def __init__(self, classId, x1, y1, x2, y2, w, h):
         self.classId = int(classId)
-        xmax = int(round((wf / 2.0 + xc) * float(w)))
-        xmin = int(round(max(0, (xc - wf / 2.0) * float(w))))
-        ymax = int(round((hf / 2.0 + yc) * float(h)))
-        ymin = int(round(max(0, (yc - hf / 2.0) * float(h))))
-        self.box = (xmin, ymin, xmax - xmin + 1, ymax - ymin + 1)
+        self.w = w
+        self.h = h
+        self.box = (x1, y1, x2, y2)
+
+    def getYolo(self):
+        x1, y1, x2, y2 = self.box
+        x = (x1 + x2)/(2.0*(self.w or 1))
+        y = (y1 + y2)/(2.0*(self.h or 1))
+        w = (x2 - x1)/float(self.w)
+        h = (y2 - y1)/float(self.h)
+
+        return f"{self.classId} {x} {y} {w} {h}"
 
     def __repr__(self):
         return f"class={self.classId} box={self.box}"
@@ -108,7 +115,6 @@ class BBoxes:
         return False
     
     def hasOnly(self, classId):
-    
         for bbox in self.bboxes:
             #print(classId, bbox.classId, classId!=bbox.classId)
             if bbox.classId != classId:
@@ -121,21 +127,29 @@ class BBoxes:
         data = open(txtfile).readlines()
         for obj in data:
             classId, xc, yc, wf, hf = map(float, obj.strip().split(" "))
-            self.bboxes.append(BBox(classId, xc, yc, wf, hf, w, h))
-            # classId = int(classId)
-            # xmax = int(round((wf / 2.0 + xc) * float(w)))
-            # xmin = int(round(max(0, (xc - wf / 2.0) * float(w))))
-            # ymax = int(round((hf / 2.0 + yc) * float(h)))
-            # ymin = int(round(max(0, (yc - hf / 2.0) * float(h))))
-            # bboxes.append(
-            #     {
-            #         "classId": classId,
-            #         "confidence": 1.0,
-            #         "box": (xmin, ymin, xmax - xmin + 1, ymax - ymin + 1),
-            #         "name": classes.get(classId, "noname"),
-            #     }
-            # )
+            wp = wf*w
+            hp = hf*h
+            x1 = xc*w - wp/2
+            y1 = yc*h - hp/2
+            self.bboxes.append(BBox(classId, x1, y1, x1+wp, y1+hp, w, h))
         return self.bboxes
+
+
+    def save(self, frame, filename, path, include=[]):
+        if not os.path.exists(path):
+            os.makedirs(path)
+        
+        basename = os.path.basename(filename).split(".")[0] 
+        filename_new = os.path.join(path, basename + ".txt")
+        filename_jpg = os.path.join(path, basename + ".jpg")
+        with open(filename_new, "w") as f:
+            log.info("save to %s", filename_new)
+            for bbox in self.bboxes:
+                if bbox.classId in include:
+                    f.write(bbox.getYolo()+"\n")
+        cv.imwrite(filename_jpg, frame, [cv.IMWRITE_JPEG_QUALITY, 100])
+
+
 
 
 class Grabber:

@@ -106,6 +106,8 @@ def get_config() -> Any:
     # parser.add_argument("--legacy", action="store_true", default=False, help="test legacy code")
     # parser.add_argument("--check-shm", type=int, default=30, help="check shm allocation every n frames; 0 disable check")
     parser.add_argument("--move", default="", help="move files to <path>")
+    parser.add_argument("--save", default="", help="autolabeling to <path>")
+
 
     config = parser.parse_args()
     logging.basicConfig(
@@ -114,9 +116,9 @@ def get_config() -> Any:
     )
 
     if config.filter_classes:
-        config.filter_classes = [int(cls) for cls in config.filter_classes]
+        config.filter_classes = [int(cls) for cls in config.filter_classes.split(",")]
     if config.filter_classes_strict:
-        config.filter_classes_strict = [int(cls) for cls in config.filter_classes_strict]
+        config.filter_classes_strict = [int(cls) for cls in config.filter_classes_strict.split(",")]
 
     return config
 
