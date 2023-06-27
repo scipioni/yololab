@@ -35,14 +35,6 @@ async def grab(config, grabber: Grabber, model: models.Model) -> None:
         if frame is None:
             break
 
-        if config.filter_classes:
-            for classId in config.filter_classes:
-                if bboxes.has(classId):
-                    #config.step = True
-                    config.show = True
-                    print(f"not match {filename} on {classId}")
-                else:
-                    config.show = False
 
         if config.filter_classes_strict:
              for classId in config.filter_classes_strict:
@@ -57,9 +49,19 @@ async def grab(config, grabber: Grabber, model: models.Model) -> None:
 
         #print(config.filter_class)
         model.predict(frame)
+
+        bboxes_predicted = model.getBBoxes()
+
+        if config.filter_classes:
+            matched = False
+            for classId in config.filter_classes:
+                if bboxes_predicted.has(classId):
+                    matched = True
+            if matched and config.save:
+                bboxes_predicted.save(frame, filename, config.save, include=config.filter_classes)
+                    
         if config.show:
             model.show()
-
 
 def main():
     from .config import get_config
