@@ -238,7 +238,7 @@ class RtspGrabber(Grabber):
         self._vid = None
 
     async def get(self, key=None):
-        (do_continue, buff) = super().get(key=key)
+        (do_continue, buff, _) = super().get(key=key)
         if not do_continue:
             return (None, self.counter, [])
         if not self._vid:
@@ -247,7 +247,7 @@ class RtspGrabber(Grabber):
             #     h264. ! queue ! {self.config.decoder} ! videorate ! video/x-raw,framerate={framerate}/{divisor} ! videoconvert ! video/x-raw, format=BGR  ! videoconvert ! appsink drop=true
             #     """  
             url = self.config.images[0]
-            self._vid = cv.VideoCapture(f"rtspsrc location={url} protocols=tcp latency=0 ! decodebin ! videoconvert ! video/x-raw,format=BGR ! appsink drop=1", cv.CAP_GSTREAMER)
+            self._vid = cv.VideoCapture(f"rtspsrc location={url} protocols=tcp latency=0 ! rtph264depay ! decodebin ! videoconvert ! video/x-raw,format=BGR ! appsink drop=1", cv.CAP_GSTREAMER)
             if not self._vid.isOpened():
                 return (None, self.counter, [])
             log.info("... OK, connected")
