@@ -43,14 +43,17 @@ import signal
 import socket
 import struct
 import time
-from distutils.command.config import config
+import shutil
+#from distutils.command.config import config
 from multiprocessing import Process, Queue
 from multiprocessing.shared_memory import SharedMemory
+#from pathlib import Path
 
 import configargparse
 import cv2 as cv
 import numpy as np
 from shared_ndarray2 import SharedNDArray
+from .timing import timing
 
 try:
     from pypylon import genicam, pylon
@@ -64,6 +67,89 @@ from .timing import timing
 from . import aioudp
 
 log = logging.getLogger(__name__)
+
+
+class BBox:
+    confidence = 1.0
+
+    def __init__(self, classId, x1, y1, x2, y2, w, h):
+        self.classId = int(classId)
+        self.w = w
+        self.h = h
+        self.box = (x1, y1, x2, y2)
+
+    def getYolo(self):
+        x1, y1, x2, y2 = self.box
+        x = (x1 + x2)/(2.0*(self.w or 1))
+        y = (y1 + y2)/(2.0*(self.h or 1))
+        w = (x2 - x1)/float(self.w)
+        h = (y2 - y1)/float(self.h)
+
+        return f"{self.classId} {x} {y} {w} {h}"
+
+    def __repr__(self):
+        return f"class={self.classId} box={self.box}"
+
+class BBoxes:
+    def __init__(self):
+        self.bboxes = [] #bboxes
+        self.id = time.time()
+
+    def __repr__(self):
+        result = [f"bboxes={self.id}"]
+        for box in self.bboxes:
+            result.append(str(box))
+        return "\n".join(result)
+    
+    def add(self, bbox: BBox):
+        self.bboxes.append(bbox)
+
+    def extend(self, bboxes):
+        for box in bboxes:
+            self.add(box)
+
+    def has(self, classId):
+        for bbox in self.bboxes:
+            if bbox.classId == classId:
+                return True
+        return False
+    
+    def hasOnly(self, classId):
+        for bbox in self.bboxes:
+            #print(classId, bbox.classId, classId!=bbox.classId)
+            if bbox.classId != classId:
+                return False
+        return True
+
+    def import_txt(self, txtfile, w, h, classes={}):
+        if not os.path.exists(txtfile):
+            return []
+        data = open(txtfile).readlines()
+        for obj in data:
+            classId, xc, yc, wf, hf = map(float, obj.strip().split(" "))
+            wp = wf*w
+            hp = hf*h
+            x1 = xc*w - wp/2
+            y1 = yc*h - hp/2
+            self.bboxes.append(BBox(classId, x1, y1, x1+wp, y1+hp, w, h))
+        return self.bboxes
+
+
+    def save(self, frame, filename, path, include=[]):
+        if not os.path.exists(path):
+            os.makedirs(path)
+        
+        basename = os.path.basename(filename).split(".")[0] 
+        filename_new = os.path.join(path, basename + ".txt")
+        filename_jpg = os.path.join(path, basename + ".jpg")
+        with open(filename_new, "w") as f:
+            log.info("save to %s", filename_new)
+            for bbox in self.bboxes:
+                if bbox.classId in include:
+                    f.write(bbox.getYolo()+"\n")
+        cv.imwrite(filename_jpg, frame, [cv.IMWRITE_JPEG_QUALITY, 100])
+
+
 
 
 class Grabber:
@@ -96,7 +182,7 @@ class Grabber:
                 self.fps_mean * ((self.counter - 1) / self.counter) + fps / self.counter
             )
         self._started_at = time.time()
-        if self.counter % (5 * int(self.fps_mean)) == 0:  # ogni 5 secondi circa
+        if self.counter % (2 * int(self.fps_mean)) == 0:  # ogni 2 secondi circa
             log.info(
                 "camera-id=%s %.1f FPS (mean %.1f) "
                 % (self.config.camera_id, fps, self.fps_mean)
@@ -106,7 +192,6 @@ class Grabber:
             key = cv.waitKey(1) & 0xFF
         if key:
             self.key = chr(key)
-
         if key in (ord("q"), 27):
             return (None, "")
         elif key in (ord("h"),):
@@ -114,7 +199,7 @@ class Grabber:
         elif self.key in ("d",):
             self.config.debug = not self.config.debug
 
-        return (True, key)
+        return (True, key, [])
 
     def getBboxes(self, classes):
         return []
@@ -122,6 +207,10 @@ class Grabber:
     def close(self):
         log.info("close")
 
+    def move(self, filename, path):
+        log.info("move %s to %s", filename, path)
+        for f in glob.glob(filename.split(".")[0] + ".*"):
+            shutil.move(f, path)
 
 class DummyGrabber(Grabber):
     name = "dummy"
@@ -132,8 +221,8 @@ class DummyGrabber(Grabber):
     async def get(self, key=None):
         (do_continue, buff) = super().get(key=key)
         if not do_continue:
-            return (None, "")
-        return (np.zeros((2048, 1024, 1), np.uint8), self.counter)
+            return (None, "", [])
+        return (np.zeros((2048, 1024, 1), np.uint8), self.counter, [])
 
 
 class WebcamGrabber(Grabber):
@@ -146,14 +235,40 @@ class WebcamGrabber(Grabber):
     async def get(self, key=None):
         (do_continue, buff) = super().get(key=key)
         if not do_continue:
-            return (None, "")
+            return (None, "", [])
         if not self._vid:
             self._vid = cv.VideoCapture(self.config.url or 0)
 
         ret, frame = self._vid.read()
         if not ret:
-            return None
-        return (frame, self.counter)
+            return (None, "", [])
+        return (frame, self.counter, [])
+
+class RtspGrabber(Grabber):
+    name = "rtsp"
+
+    def __init__(self, config):
+        super().__init__(config)
+        self._vid = None
+
+    async def get(self, key=None):
+        (do_continue, buff, _) = super().get(key=key)
+        if not do_continue:
+            return (None, self.counter, [])
+        if not self._vid:
+
+            # connection_string = f"""rtspsrc location={self.config.url} protocols={self.config.protocol} latency=0 ! rtph264depay ! h264parse ! tee name=h264 
+            #     h264. ! queue ! {self.config.decoder} ! videorate ! video/x-raw,framerate={framerate}/{divisor} ! videoconvert ! video/x-raw, format=BGR  ! videoconvert ! appsink drop=true
+            #     """  
+            url = self.config.images[0]
+            self._vid = cv.VideoCapture(f"rtspsrc location={url} protocols=tcp latency=0 ! rtph264depay ! decodebin ! videoconvert ! video/x-raw,format=BGR ! appsink drop=1", cv.CAP_GSTREAMER)
+            if not self._vid.isOpened():
+                return (None, self.counter, [])
+            log.info("... OK, connected")
+        ret, frame = self._vid.read()
+        if not ret:
+            return (None, self.counter, [])
+        return (frame, self.counter, [])
 
 
 class FileGrabber(Grabber):
@@ -172,38 +287,43 @@ class FileGrabber(Grabber):
             if filename[0] != "/":
                 files[index] = filename #os.path.join(self.config.path, filename)
 
-        if files and (".mp4" in files[0] or ".mkv" in files[0]):
+        if files and (".mp4" in files[0] or ".mkv" in files[0] or ".mov" in files[0]):
             self.video = files[0]
-        self.files = files
+            log.info("video detected: %s" % self.video)
+        else:
+            with timing("glob", count=1):
+                if files and "*" in files[0]:
+                    files = [f for f in glob.iglob(files[0])]
+
+            self.files = files
+            log.info("detected %d files", len(files))
 
         if self.video:
-            log.info("video detected: %s" % self.video)
-
             self.cap = cv.VideoCapture(self.video)
         else:
             self.cap = None
 
         self.current_frame = None
-        self.current_bboxes = []
+        self.current_bboxes = None
 
-    def getBboxes(self, classes):
-        if self.current_frame is None or self.video:
-            return []
-        (h, w) = self.current_frame.shape[:2]
-        bboxes = get_bboxes(
-            self.files[self.current].replace(".jpg", ".xml"), classes=classes
-        )
-        if not bboxes:
-            bboxes = get_bboxes_txt(
-                self.files[self.current].replace(".jpg", ".txt"), w, h, classes=classes
-            )
-        return bboxes
+    # def getBboxes(self, classes):
+    #     if self.current_frame is None or self.video:
+    #         return []
+    #     (h, w) = self.current_frame.shape[:2]
+    #     bboxes = get_bboxes(
+    #         self.files[self.current].replace(".jpg", ".xml"), classes=classes
+    #     )
+    #     if not bboxes:
+    #         bboxes = get_bboxes_txt(
+    #             self.files[self.current].replace(".jpg", ".txt"), w, h, classes=classes
+    #         )
+    #     return bboxes
 
     async def get(self, key=None):
-        (do_continue, buff) = super().get(key=key)
+        (do_continue, buff, _) = super().get(key=key)
         self.isNew = self.current_frame is None
         if not do_continue:
-            return (None, "")
+            return (None, "", [])
 
         if not (self.config.show and self.config.step):
             self.current += 1
@@ -219,12 +339,14 @@ class FileGrabber(Grabber):
             self.config.save = not self.config.save
         elif self.key in ("p", ","):
             self.current -= 1
+        elif self.key in ("c",):
+            self.config.step = not self.config.step
 
         if self.video:
             if self.current_video != self.current:
                 ret, img = self.cap.read()
                 if img is None:
-                    return (None, "")
+                    return (None, "", [])
                 # self.current += 1
                 if self.grey:
                     img = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
@@ -236,14 +358,23 @@ class FileGrabber(Grabber):
             if self.isNew:
                 with timing("cv.imread"):
                     # https://github.com/libvips/pyvips/issues/179#issuecomment-618936358
-                    img = cv.imread(self.files[self.current])
+                    filename = self.files[self.current]
+                    img = cv.imread(filename)
+                    if img is None:
+                        return (None, "", None)
+                    #img = np.zeros((1, 1, 1), np.uint8)
+                    filetxt = filename.split(".")[0] + ".txt"
+
+                    h,w = img.shape[:2]
+                    self.current_bboxes = BBoxes()
+                    self.current_bboxes.import_txt(filetxt, w, h)
                 if self.grey:
                     img = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
                 self.current_frame = img
             if self.key in ("i",):
                 log.info("filename: path=%s shape=%s", self.files[self.current], self.current_frame.shape)
         else:
-            return (None, "")
+            return (None, "", self.current_bboxes)
 
         if self.key in ("s",):
             filename = os.path.join(
@@ -261,12 +392,9 @@ class FileGrabber(Grabber):
             self.isNew = True
 
         if self.video:
-            return self.current_frame.copy(), "%s-%d.jpg" % (
-                os.path.basename(self.video).split(".")[0],
-                self.current,
-            )
+            return self.current_frame, "%s-%d.jpg" % (os.path.basename(self.video).split(".")[0], self.current), []
         else:
-            return self.current_frame.copy(), self.files[self.current]
+            return self.current_frame, self.files[self.current], self.current_bboxes
 
 
 class DcamGrabber(Grabber):

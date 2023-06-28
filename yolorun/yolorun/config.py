@@ -30,16 +30,18 @@ def get_config() -> Any:
     parser.add_argument("--step", action="store_true", default=False)
 
     #parser.add_argument("--models", default="./models", help="models repo")
-    parser.add_argument("--model", default="models/yolov8n.engine", help="model name")
+    parser.add_argument("--model", default="", help="model name")
     parser.add_argument("--show-ann", action="store_true", default=False, help="show annotator info")
     parser.add_argument("--url", default="", help="camera url, for example rtsp://10.1.16.107:554/s0")
-    parser.add_argument("--confidence-min", type=float, default=0.9)
+    parser.add_argument("--confidence-min", type=float, default=0.1)
 
     #parser.add_argument('--engine', default="models/yolov8n.engine", help='Engine file')
     parser.add_argument('--device',
                         default='cuda:0',
                         help='TensorRT infer device')
 
+    parser.add_argument("--filter-classes", default="", help="match given classes, for example 0,1,...")
+    parser.add_argument("--filter-classes-strict", default="", help="match given classes, for example 0,1,...")
     # parser.add_argument("--inference", action="store_true", default=False)
     # parser.add_argument("--nano", action="store_true", default=True)
     # parser.add_argument("--custom", action="store_true", default=False)
@@ -103,12 +105,20 @@ def get_config() -> Any:
     # )
     # parser.add_argument("--legacy", action="store_true", default=False, help="test legacy code")
     # parser.add_argument("--check-shm", type=int, default=30, help="check shm allocation every n frames; 0 disable check")
+    parser.add_argument("--move", default="", help="move files to <path>")
+    parser.add_argument("--save", default="", help="autolabeling to <path>")
+
 
     config = parser.parse_args()
     logging.basicConfig(
         format="%(asctime)s [%(levelname)s] %(name)s %(message)s",
         level="DEBUG" if config.debug else "INFO",
     )
+
+    if config.filter_classes:
+        config.filter_classes = [int(cls) for cls in config.filter_classes.split(",")]
+    if config.filter_classes_strict:
+        config.filter_classes_strict = [int(cls) for cls in config.filter_classes_strict.split(",")]
 
     return config
 

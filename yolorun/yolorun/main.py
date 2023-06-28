@@ -12,7 +12,7 @@ import cv2 as cv
 #import torch
 
 from .config import CLASSES, COLORS
-from .grabber import DummyGrabber, FileGrabber, Grabber, WebcamGrabber
+from .grabber import DummyGrabber, FileGrabber, Grabber, WebcamGrabber, RtspGrabber
 # from .yolov8.torch_utils import det_postprocess
 # from .yolov8.utils import blob, letterbox, path_to_list
 
@@ -21,105 +21,47 @@ log = logging.getLogger(__name__)
 from . import models
 
 
+#out = cv2.VideoWriter('output.mp4', fourcc, fps,(frame_width,frame_height),True )
 
-
-# async def grab(config, grabber: Grabber) -> None:
-#     device = torch.device(config.device)
-#     engine = TRTModule(config.model, device)
-#     H, W = engine.inp_info[0].shape[-2:]
-#     engine.set_desired(["num_dets", "bboxes", "scores", "labels"])
-
-#     while True:
-#         try:
-#             frame, filename = await grabber.get()
-#         except Exception as e:
-#             log.error(e)
-#             continue
-
-#         if frame is None:
-#             break
-
-#         if config.show:
-#             draw = frame.copy()
-#         frame, ratio, dwdh = letterbox(frame, (W, H))
-#         rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-#         tensor = blob(rgb, return_seg=False)
-#         dwdh = torch.asarray(dwdh * 2, dtype=torch.float16, device=device)
-#         tensor = torch.asarray(tensor, device=device)
-#         # inference
-#         data = engine(tensor)
-
-#         bboxes, scores, labels = det_postprocess(data)
-#         bboxes -= dwdh
-#         bboxes /= ratio
-
-#         for bbox, score, label in zip(bboxes, scores, labels):
-#             bbox = bbox.round().int().tolist()
-#             cls_id = int(label)
-#             cls = CLASSES[cls_id]
-
-#             if config.show:
-#                 color = COLORS[cls]
-#                 cv2.rectangle(draw, bbox[:2], bbox[2:], color, 2)
-#                 cv2.putText(
-#                     draw,
-#                     f"{cls}:{score:.3f}",
-#                     (bbox[0], bbox[1] - 2),
-#                     cv2.FONT_HERSHEY_SIMPLEX,
-#                     0.75,
-#                     [225, 255, 255],
-#                     thickness=2,
-#                 )
-
-#         if config.show:
-#             cv2.imshow("result", draw)
-#             cv2.waitKey(1)
-
-
-async def grab(config, grabber: Grabber) -> None:
-
-    model = models.getModel(config)
-
-    #model = YOLO(config.model)
-    #results = model.predict(source="folder", show=True) # Display preds. Accepts all YOLO predict arguments
-
-
-    # from ndarray
-    #im2 = cv2.imread("bus.jpg")
-
-
-
+async def grab(config, grabber: Grabber, model: models.Model) -> None:
     while True:
         try:
-            frame, filename = await grabber.get()
+            frame, filename, bboxes = await grabber.get()
         except Exception as e:
             log.error(e)
-            continue
+            raise
+            break
 
         if frame is None:
             break
 
-        #if config.show:
-        #    draw = frame.copy()
-        ###results = model.predict(source=frame, show=True)  # save predictions as labels
-        #results = model(frame, verbose=False)
+
+        if config.filter_classes_strict:
+             for classId in config.filter_classes_strict:
+                #print(bboxes )            
+                if bboxes.hasOnly(classId):
+                    if config.move:
+                        grabber.move(filename, config.move)
+                        
+
+                    #config.show = True
+
+
+        #print(config.filter_class)
         model.predict(frame)
 
+        bboxes_predicted = model.getBBoxes()
 
-
-# def parse_config() -> argparse.Namespace:
-#     parser = argparse.ArgumentParser()
-#     parser.add_argument('--engine', default="models/yolov8n.engine", help='engine file')
-#     parser.add_argument('--imgs', type=str, help='Images file')
-#     parser.add_argument('--show',
-#                         action='store_true',
-#                         help='Show the detection results')
-#     parser.add_argument('--device',
-#                         default='cuda:0',
-#                         help='TensorRT infer device')
-#     config = parser.parse_config()
-#     return config
-
+        if config.filter_classes:
+            matched = False
+            for classId in config.filter_classes:
+                if bboxes_predicted.has(classId):
+                    matched = True
+            if matched and config.save:
+                bboxes_predicted.save(frame, filename, config.save, include=config.filter_classes)
+                    
+        if config.show:
+            model.show()
 
 def main():
     from .config import get_config
@@ -129,12 +71,17 @@ def main():
     if config.dummy:
         grabber = DummyGrabber(config)
     elif config.images:
-        grabber = FileGrabber(config, config.images)
+        if "rtsp" in config.images[0]:
+            grabber = RtspGrabber(config)
+        else:
+            grabber = FileGrabber(config, config.images)
     else:
         grabber = WebcamGrabber(config)
 
+    model = models.getModel(config)
+
     loop = asyncio.get_event_loop()
-    loop.run_until_complete(grab(config, grabber))
+    loop.run_until_complete(grab(config, grabber, model))
     loop.close()
 
 

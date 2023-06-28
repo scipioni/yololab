@@ -7,7 +7,7 @@ global_counters = {}
 
 
 @contextmanager
-def timing(description: str, level=1) -> None:
+def timing(description: str, level=1, count=10) -> None:
     global global_counters
     start = time()
     yield
@@ -41,7 +41,7 @@ def timing(description: str, level=1) -> None:
     counters["max"] = max(elapsed_time, counters["max"])
     counters["min"] = min(elapsed_time, counters["min"])
 
-    if n % 10 == 0:
+    if n % count == 0:
         log.debug(
             "%s%s timing: n=%d current=%.1fms min=%.1fms max=%.1fms mean=%.1fms"
             % (
