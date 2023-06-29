@@ -19,7 +19,7 @@ dependencies = [
     #"opencv-python-rolling<5.0.0",
     "shared-ndarray2>=1.0.0.post0",
     "onnxruntime>=1.15.0",
-    "opencv-python-rolling<5.0.0",
+    #"opencv-python-rolling<5.0.0",
     "split-folders>=0.5.1",
 ]
 requires-python = ">=3.9"
@@ -32,10 +32,10 @@ build-backend = "pdm.backend"
 
 [project.optional-dependencies]  # This is optional dependencies
 train = [
-"ultralytics>=8.0.118",
+#"ultralytics>=8.0.118",
 "torchinfo>=1.8.0",
 "onnx>=1.14.0",
-"opencv-python-rolling<5.0.0",
+#"opencv-python-rolling<5.0.0",
 ]
 gpu = [
     "onnxruntime-gpu==1.14",

@@ -18,9 +18,13 @@ for CUDA suppor on arch
 go-task venv
 ```
 
-opencv rolling to fix some older CPUs 
+custom opencv
 ```
-pip install -U opencv-python-rolling<5.0.0
+# install fake (dummy) opencv-python
+pip install -e opencv-python
+
+# build opencv
+scripts/build-build.sh
 ```
 
 ### ultralytics config

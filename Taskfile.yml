@@ -27,6 +27,7 @@ tasks:
         echo "set -gx YOLO_CONFIG_DIR ~/.config/Ultralytics/" >> .venv/bin/activate.fish
         source .venv/bin/activate
         pip install --upgrade pip
+        pip install -e opencv-python
         pip install -e yololab
         cd yololab 
         pdm install -G train
