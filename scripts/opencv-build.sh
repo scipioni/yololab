@@ -2,7 +2,7 @@
 
 # https://github.com/AastaNV/JEP/blob/master/script/install_opencv4.6.0_Jetson.sh
 
-RELEASE=4.x
+RELEASE=4.8.0
 PYTHON=python
 BUILD=./build
 

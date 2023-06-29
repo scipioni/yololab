@@ -37,7 +37,30 @@ yolo export model=models/yolov8n.pt imgsz=640 format=engine device=0
 
 ## test fpds
 
+## label studio
 
+convert from yolo
+```
+pip install label-studio-converter
+
+cd /archive/dataset/fp/unused/granny/
+ln -s . images
+ln -s . labels
+label-studio-converter import yolo -i /archive/dataset/fp/unused/granny/ -o /tmp/ls-granny.json
+```
+
+```
+yolo-folder
+  images
+   - 1.jpg
+   - 2.jpg
+   - ...
+  labels
+   - 1.txt
+   - 2.txt
+
+  classes.txt
+```
 
 ## dataset
 
