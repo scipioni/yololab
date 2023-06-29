@@ -212,6 +212,15 @@ class Grabber:
         for f in glob.glob(filename.split(".")[0] + ".*"):
             shutil.move(f, path)
 
+    def postprocess(self, frame):
+        if self.config.crop:
+            h, w = frame.shape[:2]
+            l = min(h, w)
+            x1 = int((w-l)/2)
+            y1 = int((h-l)/2)
+            return frame[y1:y1+l, x1:x1+l]
+        return frame
+
 class DummyGrabber(Grabber):
     name = "dummy"
 
@@ -242,6 +251,7 @@ class WebcamGrabber(Grabber):
         ret, frame = self._vid.read()
         if not ret:
             return (None, "", [])
+
         return (frame, self.counter, [])
 
 class RtspGrabber(Grabber):
@@ -268,6 +278,7 @@ class RtspGrabber(Grabber):
         ret, frame = self._vid.read()
         if not ret:
             return (None, self.counter, [])
+        frame = self.postprocess(frame)
         return (frame, self.counter, [])
 
 
@@ -351,6 +362,7 @@ class FileGrabber(Grabber):
                 if self.grey:
                     img = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
                 self.current_video = self.current
+                img = self.postprocess(img)
                 self.current_frame = img
             if self.key in ("i",):
                 log.info("filename: path=%s shape=%s", self.video, self.current_frame.shape)
