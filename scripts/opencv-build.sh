@@ -2,7 +2,7 @@
 
 # https://github.com/AastaNV/JEP/blob/master/script/install_opencv4.6.0_Jetson.sh
 
-RELEASE=4.x
+RELEASE=4.8.0
 PYTHON=python
 BUILD=./build
 
@@ -40,7 +40,7 @@ export CC=gcc-12
 export CXX=g++-12
 
 cmake \
-	-D BUILD_LIST=core,improc,videoio,dnn,python3,cudev,dnn_objdetect,highgui,video \
+	-D BUILD_LIST=core,improc,videoio,dnn,python3,cudev,dnn_objdetect,highgui,video,calib3d \
 	-D WITH_CUDA=ON \
 	-D WITH_CUDNN=ON \
 	-D CUDA_ARCH_BIN="7.2,8.7" \
