@@ -193,7 +193,7 @@ class Grabber:
         if key:
             self.key = chr(key)
         if key in (ord("q"), 27):
-            return (None, "")
+            return (None, "", [])
         elif key in (ord("h"),):
             self.config.show = not self.config.show
         elif self.key in ("d",):
