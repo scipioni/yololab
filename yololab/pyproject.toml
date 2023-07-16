@@ -22,6 +22,7 @@ dependencies = [
     #"opencv-python-rolling<5.0.0",
     "split-folders>=0.5.1",
     "pylabel>=0.1.51",
+    "fiftyone>=0.21.4",
 ]
 requires-python = ">=3.9"
 readme = "README.md"
@@ -46,5 +47,4 @@ gpu = [
 [project.scripts]
 grabber = "yololab.main:main"
 fpds2voc = "yololab.utils.fpds:main"
-dynamic-cropper = "yololab.dataset_utils.DatasetDynamicCropper.main:main"
-dsconvert = "yololab.dataset_utils.utils.dsconvert.main:main"
+openimages-download = "yololab.utils.openimages_download:main"
