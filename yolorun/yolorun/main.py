@@ -1,7 +1,7 @@
 # python YOLOv8-TensorRT/infer-det.py --engine models/yolov8n.engine --device cuda:0 --imgs samples/fp1.png
 
 
-from .yolov8.engine import TRTModule  # isort:skip
+#from .yolov8.engine import TRTModule  # isort:skip
 import argparse
 import asyncio
 import logging

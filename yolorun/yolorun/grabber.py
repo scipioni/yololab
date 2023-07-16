@@ -140,6 +140,12 @@ class BBoxes:
             os.makedirs(path)
         
         basename = os.path.basename(filename).split(".")[0] 
+
+        classes_txt = os.path.join(path, "classes.txt")
+        if not os.path.exists(classes_txt):
+            with open(classes_txt, "w") as f:
+                f.write("\n".join([str(c) for c in include]))
+
         filename_new = os.path.join(path, basename + ".txt")
         filename_jpg = os.path.join(path, basename + ".jpg")
         with open(filename_new, "w") as f:
