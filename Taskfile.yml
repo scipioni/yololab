@@ -26,7 +26,7 @@ tasks:
         echo "export YOLO_CONFIG_DIR=~/.config/Ultralytics/" >> .venv/bin/activate
         echo "set -gx YOLO_CONFIG_DIR ~/.config/Ultralytics/" >> .venv/bin/activate.fish
         source .venv/bin/activate
-        pip install --upgrade pip
+        pip install --upgrade pip pdm
         pip install -e opencv-python
         pip install -e yololab
         cd yololab 
@@ -114,26 +114,13 @@ tasks:
       - pip install -e yololab
 
 
-  test:deepsort:
-    cmds:
-      - python yololab/yololab/experiments/deepsort.py
-  
   train:
     cmds:
       - |
         # https://docs.ultralytics.com/usage/cfg/
         export YOLO_CONFIG_DIR=~/.config/Ultralytics/
-        yolo detect train project=models name=fp data=/archive/dataset/fp.yaml model=models/yolov8n.pt pretrained=true exist_ok=true imgsz=640 epochs=80 batch=-1 lr0=0.01 
-        #resume=True
-        #yolo export model=models/fp/weights/best.pt imgsz=640 format=onnx opset=12
+        yolo detect train project=models name=fp data=/archive/dataset/fp.yaml model=models/yolov8s.pt pretrained=true exist_ok=true imgsz=640 epochs=80 batch=-1 lr0=0.01 
     
-  test:train:mini:
-    cmds:
-      - |
-        # https://docs.ultralytics.com/usage/cfg/
-        export YOLO_CONFIG_DIR=~/.config/Ultralytics/
-        yolo detect train project=models name=fpds data=datasets/fpds-mini.yaml model=models/yolov8n.pt pretrained=true exist_ok=true imgsz=640 epochs=1 lr0=0.01
-        yolo export model=models/fpds/weights/best.pt imgsz=640 format=onnx opset=12
     
   test:opencv:
     cmds:

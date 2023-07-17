@@ -31,6 +31,13 @@ scripts/build-build.sh
 
 edit ~/.config/Ultralytics/settings.yaml to use <yololab> root dir for `dataset` and `runs` 
 
+## openimages download
+
+create yolov4 dataset with bed, sofa and related up/down people
+```
+openimages-download --split train --out /tmp/train
+openimages-filter --out /tmp/sofabed /tmp/train
+```
 
 ## export engine format
 

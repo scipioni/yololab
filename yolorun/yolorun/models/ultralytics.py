@@ -25,7 +25,7 @@ class ModelYolo(Model):
                     self.boxes.append(box)
 
     def getBBoxes(self):
-        bboxes = BBoxes()
+        bboxes = BBoxes(truth=False)
         for box in self.boxes:
             x1, y1, x2, y2 = box.xyxy[0].astype(int)[:4]
             bboxes.add(
@@ -37,43 +37,58 @@ class ModelYolo(Model):
                     y2,
                     self.w,
                     self.h,
+                    box.conf[0]
                 )
             )
         return bboxes
 
-    def show(self, scale=1.0):
-        self.prepare_show()
+    # def _show_bboxes(self, boxes, truth=False):
+    #     for box in boxes:
+    #         try:
+    #             r = box.xyxy[0].astype(int)
+    #         except Exception as e:
+    #             print(e)
+    #             continue
 
-        for box in self.boxes:
-            r = box.xyxy[0].astype(int)
-            color = (255, 255, 255)
-            cls = int(box.cls[0])
-            if cls > 0:
-                color = (0, 0, 255)
+    #         cls = int(box.cls[0])
+    #         if truth:
+    #             color = (255,0,0)
+    #         else:
+    #             color = (255,255,255)
+    #             if cls > 0:
+    #                 color = (0, 0, 255)
 
-            confidence = round(box.conf[0] * 100)
-            label = f"{cls} {confidence:02}%"
-            fsize, _ = cv.getTextSize(label, cv.FONT_HERSHEY_SIMPLEX, 1.0, 2)
-            fw, fh = fsize
-            delta = 2
+    #         confidence = round(box.conf[0] * 100)
+    #         label = f"{cls} {confidence:02}%"
+    #         fsize, _ = cv.getTextSize(label, cv.FONT_HERSHEY_SIMPLEX, 1.0, 2)
+    #         fw, fh = fsize
+    #         delta = 2
 
-            x1, y1, x2, y2 = r[:4]
-            cv.rectangle(self.frame_dirty, r[:2], r[2:], color, 2, lineType=cv.LINE_AA)
-            cv.rectangle(
-                self.frame_dirty, (x1, y1 - fh - 2 * delta), (x2, y1), color, -1
-            )
+    #         x1, y1, x2, y2 = r[:4]
+    #         cv.rectangle(self.frame_dirty, r[:2], r[2:], color, 2, lineType=cv.LINE_AA)
+    #         cv.rectangle(
+    #             self.frame_dirty, (x1, y1 - fh - 2 * delta), (x2, y1), color, -1
+    #         )
 
-            cv.putText(
-                self.frame_dirty,
-                label,
-                (r[0], r[1] - delta),
-                0,
-                0.9,
-                (0, 0, 0),
-                2,
-                lineType=cv.LINE_AA,
-            )
-        super().show()
+    #         cv.putText(
+    #             self.frame_dirty,
+    #             label,
+    #             (r[0], r[1] - delta),
+    #             0,
+    #             0.9,
+    #             (0, 0, 0),
+    #             2,
+    #             lineType=cv.LINE_AA,
+    #         )
+
+    # def show(self, scale=1.0, bboxes_truth=[]):
+    #     self.prepare_show()
+
+    #     #
+    #     self._show_bboxes(self.boxes)
+    #     self._show_bboxes(bboxes_truth, truth=True)
+
+    #     super().show()
 
 
 # import cv2

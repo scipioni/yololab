@@ -16,6 +16,10 @@ class Model:
         if self.frame_dirty is None:
             self.frame_dirty = self.frame.copy()
 
+    def draw_bboxes(self, bboxes):
+        if bboxes:
+            bboxes.show(self.frame_dirty)
+
     def show(self, scale=1.0):
         frame = self.frame if self.frame_dirty is None else self.frame_dirty
         if scale != 1.0:
@@ -23,8 +27,6 @@ class Model:
             dim = (int(w * scale), int(h * scale))
             frame = cv.resize(frame, dim, interpolation=cv.INTER_AREA)
         cv.imshow(self.config.model, frame)
-        #cv.waitKey(1)
-
 
 
 class ModelDummy(Model):

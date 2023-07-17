@@ -1,7 +1,3 @@
-# python YOLOv8-TensorRT/infer-det.py --engine models/yolov8n.engine --device cuda:0 --imgs samples/fp1.png
-
-
-from .yolov8.engine import TRTModule  # isort:skip
 import argparse
 import asyncio
 import logging
@@ -9,24 +5,18 @@ import time
 from pathlib import Path
 
 import cv2 as cv
-#import torch
 
 from .config import CLASSES, COLORS
 from .grabber import DummyGrabber, FileGrabber, Grabber, WebcamGrabber, RtspGrabber
-# from .yolov8.torch_utils import det_postprocess
-# from .yolov8.utils import blob, letterbox, path_to_list
 
 log = logging.getLogger(__name__)
 
 from . import models
 
-
-#out = cv2.VideoWriter('output.mp4', fourcc, fps,(frame_width,frame_height),True )
-
 async def grab(config, grabber: Grabber, model: models.Model) -> None:
     while True:
         try:
-            frame, filename, bboxes = await grabber.get()
+            frame, filename, bboxes_truth = await grabber.get()
         except Exception as e:
             log.error(e)
             raise
@@ -35,19 +25,11 @@ async def grab(config, grabber: Grabber, model: models.Model) -> None:
         if frame is None:
             break
 
-
         if config.filter_classes_strict:
              for classId in config.filter_classes_strict:
-                #print(bboxes )            
-                if bboxes.hasOnly(classId):
+                if bboxes_truth.hasOnly(classId):
                     if config.move:
                         grabber.move(filename, config.move)
-                        
-
-                    #config.show = True
-
-
-        #print(config.filter_class)
         model.predict(frame)
 
         bboxes_predicted = model.getBBoxes()
@@ -61,6 +43,9 @@ async def grab(config, grabber: Grabber, model: models.Model) -> None:
                 bboxes_predicted.save(frame, filename, config.save, include=config.filter_classes)
                     
         if config.show:
+            model.prepare_show()
+            model.draw_bboxes(bboxes_predicted)
+            model.draw_bboxes(bboxes_truth)
             model.show()
 
 def main():

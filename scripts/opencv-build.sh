@@ -5,6 +5,7 @@
 RELEASE=4.8.0
 PYTHON=python
 BUILD=./build
+CUDA_TOOLKIT_ROOT_DIR=/opt/cuda-11.7
 
 #sudo apt install -y libdc1394-utils libdc1394-22-dev
 #sudo apt remove -y libopencv libopencv-dev libopencv-python libopencv-samples
@@ -40,7 +41,7 @@ export CC=gcc-12
 export CXX=g++-12
 
 cmake \
-	-D BUILD_LIST=core,improc,videoio,dnn,python3,cudev,dnn_objdetect,highgui,video,calib3d \
+	-D BUILD_LIST=core,improc,videoio,dnn,python3,cudev,dnn_objdetect,highgui,video,calib3d,gapi \
 	-D WITH_CUDA=ON \
 	-D WITH_CUDNN=ON \
 	-D CUDA_ARCH_BIN="7.2,8.7" \
@@ -58,6 +59,7 @@ cmake \
 	-D BUILD_EXAMPLES=OFF \
 	-D CMAKE_BUILD_TYPE=RELEASE \
 	-D CMAKE_INSTALL_PREFIX=$($PYTHON -c "import sys; print(sys.prefix)") \
+	-D CUDA_TOOLKIT_ROOT_DIR=${CUDA_TOOLKIT_ROOT_DIR} \
 	..
 
 make -j${JOBS} install/strip
