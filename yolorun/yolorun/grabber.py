@@ -72,11 +72,12 @@ log = logging.getLogger(__name__)
 class BBox:
     confidence = 1.0
 
-    def __init__(self, classId, x1, y1, x2, y2, w, h):
+    def __init__(self, classId, x1, y1, x2, y2, w, h, confidence=1.0):
         self.classId = int(classId)
         self.w = w
         self.h = h
         self.box = (x1, y1, x2, y2)
+        self.confidence = confidence
 
     def getYolo(self):
         x1, y1, x2, y2 = self.box
@@ -90,10 +91,52 @@ class BBox:
     def __repr__(self):
         return f"class={self.classId} box={self.box}"
 
+    def show(self, frame, truth=True):
+        cls = self.classId #int(box.cls[0])
+        if truth:
+            color = (255,0,0)
+        else:
+            color = (255,255,255)
+            if cls > 0:
+                color = (0, 0, 255)
+
+        confidence = round(self.confidence * 100)
+        if truth:
+            label = f"{cls}"
+        else:
+            label = f"{cls} {confidence:02}%"
+        fsize, _ = cv.getTextSize(label, cv.FONT_HERSHEY_SIMPLEX, 1.0, 2)
+        fw, fh = fsize
+        delta = 2
+
+        x1, y1, x2, y2 = map(int, self.box)
+        cv.rectangle(frame, (x1, y1), (x2, y2), color, 2, lineType=cv.LINE_AA)
+        
+        
+        top = y1
+        if truth:
+            top = y2 + fh + 2*delta
+
+        cv.rectangle(
+            frame, (x1, top - fh - 2 * delta), (x2, top), color, -1
+        )
+
+        cv.putText(
+            frame,
+            label,
+            (x1, top - delta),
+            0,
+            0.9,
+            (0, 0, 0),
+            2,
+            lineType=cv.LINE_AA,
+        )
+
 class BBoxes:
-    def __init__(self):
+    def __init__(self, truth=True):
         self.bboxes = [] #bboxes
         self.id = time.time()
+        self.truth = truth
 
     def __repr__(self):
         result = [f"bboxes={self.id}"]
@@ -133,6 +176,11 @@ class BBoxes:
             y1 = yc*h - hp/2
             self.bboxes.append(BBox(classId, x1, y1, x1+wp, y1+hp, w, h))
         return self.bboxes
+
+
+    def show(self, frame):
+        for box in self.bboxes:
+            box.show(frame, self.truth)
 
 
     def save(self, frame, filename, path, include=[]):
