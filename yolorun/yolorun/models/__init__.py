@@ -17,7 +17,8 @@ class Model:
             self.frame_dirty = self.frame.copy()
 
     def draw_bboxes(self, bboxes):
-        bboxes.show(self.frame_dirty)
+        if bboxes:
+            bboxes.show(self.frame_dirty)
 
     def show(self, scale=1.0):
         frame = self.frame if self.frame_dirty is None else self.frame_dirty
