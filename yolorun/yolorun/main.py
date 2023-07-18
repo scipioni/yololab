@@ -13,6 +13,7 @@ log = logging.getLogger(__name__)
 
 from . import models
 
+
 async def grab(config, grabber: Grabber, model: models.Model) -> None:
     while True:
         try:
@@ -26,7 +27,7 @@ async def grab(config, grabber: Grabber, model: models.Model) -> None:
             break
 
         if config.filter_classes_strict:
-             for classId in config.filter_classes_strict:
+            for classId in config.filter_classes_strict:
                 if bboxes_truth.hasOnly(classId):
                     if config.move:
                         grabber.move(filename, config.move)
@@ -35,18 +36,25 @@ async def grab(config, grabber: Grabber, model: models.Model) -> None:
         bboxes_predicted = model.getBBoxes()
 
         if config.filter_classes:
-            matched = False
-            for classId in config.filter_classes:
-                if bboxes_predicted.has(classId):
-                    matched = True
-            if matched and config.save:
-                bboxes_predicted.save(frame, filename, config.save, include=config.filter_classes)
-                    
+            if config.merge and config.save:
+                bboxes_predicted.merge(bboxes_truth, config.filter_classes).save(frame, filename, config.save)
+            else:
+                matched = False
+                for classId in config.filter_classes:
+                    if bboxes_predicted.has(classId):
+                        matched = True
+
+                if matched and config.save:
+                    bboxes_predicted.save(
+                        frame, filename, config.save, include=config.filter_classes
+                    )
+
         if config.show:
             model.prepare_show()
             model.draw_bboxes(bboxes_predicted)
             model.draw_bboxes(bboxes_truth)
             model.show()
+
 
 def main():
     from .config import get_config

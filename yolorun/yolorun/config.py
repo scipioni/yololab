@@ -108,6 +108,7 @@ def get_config() -> Any:
     # parser.add_argument("--check-shm", type=int, default=30, help="check shm allocation every n frames; 0 disable check")
     parser.add_argument("--move", default="", help="move files to <path>")
     parser.add_argument("--save", default="", help="autolabeling to <path>")
+    parser.add_argument("--merge", help="merge prediction with ground truthclea", action="store_true", default=False)
 
 
     config = parser.parse_args()
