@@ -183,16 +183,17 @@ class BBoxes:
 
     def merge(self, bboxes_tr, filter_classes):
         bboxes_predicted = BBoxes()
+        # classes = []
 
         for bbox_tr in bboxes_tr.bboxes:
-            for bbox in self.bboxes:
-                if bbox.classId in filter_classes:
-                    if bbox_tr.classId == bbox.classId:
-                        bboxes_predicted.add(bbox)
-                    else:
-                        bboxes_predicted.add(bbox_tr)
+            if bbox_tr.classId not in filter_classes:
+                bboxes_predicted.add(bbox_tr)
+                # if bbox_tr.classId not in classes:
+                #     bbox_tr.classId
 
-            bboxes_predicted.add(bbox_tr)
+        for bbox in self.bboxes:
+            if bbox.classId in filter_classes:
+                bboxes_predicted.add(bbox)
 
         return bboxes_predicted
 

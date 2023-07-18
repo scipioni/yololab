@@ -37,7 +37,8 @@ async def grab(config, grabber: Grabber, model: models.Model) -> None:
 
         if config.filter_classes:
             if config.merge and config.save:
-                bboxes_predicted.merge(bboxes_truth, config.filter_classes).save(frame, filename, config.save)
+                merged_bboxes = bboxes_predicted.merge(bboxes_truth, config.filter_classes)
+                merged_bboxes.save(frame, filename, config.save)
             else:
                 matched = False
                 for classId in config.filter_classes:
