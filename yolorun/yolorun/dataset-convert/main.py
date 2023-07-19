@@ -50,15 +50,18 @@ class Automator:
         return subfolders
 
 
-
     def toConvert(self, labdir, imgdir, labsample):
-        print(f'imgdir {self.imgdir}, labdir {self.labdir}, labsample {self.labsample}')
-        for img, lbl, sample in zip(self.imgdir, self.labdir, self.labsample):
-            if img.parent == lbl.parent and sample.parent == lbl:
-                return lbl, img, sample
+        convertible = []
+        for img in self.imgdir:
+            for lbl in self.labdir:
+                if img.parent == lbl.parent:
+                    for sample in self.labsample:
+                        if sample.parent == lbl:
+                            dataset = img, lbl, sample
+                            convertible.append(dataset)
+        return convertible
 
     def autoConvert(self, lbl, img, sample):
-        print(f"Converting {lbl.parent}")
         importer = lconvert.Importer(sample, img)
         converter = lconvert.Conversion(
             lbl, img, args.labelformat, importer.dataset
@@ -80,12 +83,8 @@ if __name__ == '__main__':
 
     automator = Automator()
     scanning = automator.dirscan(automator.sdir, automator.labelext, automator.imgext)
-    img, lbl, sample = automator.toConvert(automator.labdir, automator.imgdir, automator.labsample)
-    conversion = automator.autoConvert(img, lbl, sample)
-    # processing_args = [for i in list(automator.toConvert(automator.labdir, automator.imgdir, automator.labsample))]
-    # print(f'Processing args are {processing_args}')
+    processing_args = automator.toConvert(automator.labdir, automator.imgdir, automator.labsample)
 
-
-    # with multiprocessing.Pool(os.cpu_count()) as pool:
-    #     pool.starmap(automator.autoConvert, processing_args)
-    # pool.close()
+    with multiprocessing.Pool(os.cpu_count()) as pool:
+        pool.starmap(automator.autoConvert, processing_args)
+    pool.close()

@@ -69,6 +69,7 @@ class Conversion:
 
     def toSelected(self):
         if self.output_format == "voc":
+            print(f'Processing: {self.labdir.parent}')
             self.dataset.export.ExportToVoc(
                 output_path=self.labdir,
                 segmented_=False,
@@ -79,9 +80,11 @@ class Conversion:
             )
 
         if self.output_format == "coco":
+            print(f'Processing: {self.labdir.parent}')
             self.dataset.export.ExportToCoco(cat_id_index=-1)
 
         if self.output_format == "yolo":
+            print(f'Processing: {self.labdir.parent}')
             self.dataset.export.ExportToYoloV5(
                 output_path=self.imgdir,
                 yaml_file="dataset.yaml",
