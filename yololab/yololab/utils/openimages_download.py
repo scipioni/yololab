@@ -1,4 +1,4 @@
-classes=["Bed", "Sofa bed"]
+classes=["Bed", "Sofa bed", "Kitchen & dining room table", "Table", "Chair"]
 
 import fiftyone as fo
 import fiftyone.zoo as foz
@@ -30,13 +30,14 @@ def main():
     parser.add_argument("--fiftyone", default="/archive/dataset/openimages", help="openimages cache directory")
     parser.add_argument("--out", default="/tmp/openimages", help="where put dataset")
     parser.add_argument("--show-classes", default="", help="show classes")
-    parser.add_argument("--max", default=10000, type=int, help="maximum sample to download")
+    parser.add_argument("--max", default=20000, type=int, help="maximum sample to download")
     config = parser.parse_args()
 
     fo.config.dataset_zoo_dir = config.fiftyone
     
     if config.show_classes:
-        print(openimages.get_classes())
+        for c in openimages.get_classes():
+            print(c)
     else:
         process(config)
 

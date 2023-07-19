@@ -34,10 +34,11 @@ def filter_classes(txt, classes, classes_to_filter, classes_out, config):
                     obj[0] = "down"
             if obj[0] == "sofa bed":
                 obj[0] = "sofa"
+            if "table" in obj[0]: # openimage 
+                obj[0] = "diningtable" # coco
             valids.append([str(classes_out.index(obj[0])), obj[1][0], obj[1][1], obj[1][2], obj[1][3]])
     if valids:
         export(txt, valids, config)
-
 
 def process(config):
     classes_to_filter = config.classes.split(",")
@@ -46,24 +47,27 @@ def process(config):
 
     if not os.path.exists(config.out):
         os.makedirs(config.out)
-    classes_out = config.mapping.split(",")
+    with open(config.coco) as f:
+        classes_out = [c.strip() for c in f.readlines()]
     with open(os.path.join(config.out, "classes.txt"), "w") as f:
         f.write("\n".join(classes_out))
+
 def main():
-    for txt in glob.glob(os.path.join(config.sdir, "data", "*.txt")):
-        if "classes.txt" in txt:
-            continue
-        filter_classes(txt, classes, classes_to_filter, classes_out, config)
 
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('sdir', help='folder with *.jpg')
-    parser.add_argument("--classes", default="bed,sofa bed,person,man,woman,boy")
-    parser.add_argument("--mapping", default="up,down,sofa,bed")
+    parser.add_argument('sdir', help='folder')
+    parser.add_argument("--classes", default="bed,sofa bed,person,man,woman,boy,kitchen & dining room table,table,chair")
+    parser.add_argument("--coco", default="/archive/dataset/fp/classes.txt")
     parser.add_argument("--out", default="/tmp/dataset")
     config = parser.parse_args()
 
     process(config)
+    
+    #for txt in glob.glob(os.path.join(config.sdir, "data", "*.txt")):
+    #    if "classes.txt" in txt:
+    #        continue
+    #    filter_classes(txt, classes, classes_to_filter, classes_out, config)
 
 if __name__ == '__main__':
     main()

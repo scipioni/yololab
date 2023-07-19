@@ -152,15 +152,19 @@ class BBoxes:
             self.add(box)
 
     def has(self, classId):
+        if not isinstance(classId, list):
+            classId = [classId]
         for bbox in self.bboxes:
-            if bbox.classId == classId:
+            if bbox.classId in classId:
                 return True
         return False
 
     def hasOnly(self, classId):
+        if not isinstance(classId, list):
+            classId = [classId]
         for bbox in self.bboxes:
             # print(classId, bbox.classId, classId!=bbox.classId)
-            if bbox.classId != classId:
+            if not bbox.classId in classId:
                 return False
         return True
 
@@ -181,21 +185,28 @@ class BBoxes:
         for box in self.bboxes:
             box.show(frame, self.truth)
 
-    def merge(self, bboxes_tr, filter_classes):
-        bboxes_predicted = BBoxes()
-        # classes = []
+    def merge(self, bboxes_in, filter_classes):
+        """
+        add to self.bboxes bboxes_in if bbox is in filter_classes replacing those in self
 
-        for bbox_tr in bboxes_tr.bboxes:
-            if bbox_tr.classId not in filter_classes:
-                bboxes_predicted.add(bbox_tr)
-                # if bbox_tr.classId not in classes:
-                #     bbox_tr.classId
+        """
+        bboxes_result = BBoxes()
 
+        # non abbiamo nulla da aggiungere
+        if not filter_classes:
+            return bboxes_in
+
+        # rimuoviamo tutti i bbox che sono in filter_classes perchè quelli in bboxes_in sono prioritari
         for bbox in self.bboxes:
-            if bbox.classId in filter_classes:
-                bboxes_predicted.add(bbox)
+            if not bbox.classId in filter_classes:
+                bboxes_result.add(bbox)
 
-        return bboxes_predicted
+        # aggiungiamo quelli in bboxes_in se appartengono a filter_class
+        for bbox_in in bboxes_in.bboxes:
+            if bbox_in.classId in filter_classes:
+                bboxes_result.add(bbox_in)
+
+        return bboxes_result
 
     def save(self, frame, filename, path, include=[]):
         if not os.path.exists(path):
@@ -274,7 +285,16 @@ class Grabber:
         log.info("close")
 
     def move(self, filename, path):
+        if not os.path.isdir(path):
+            if os.path.exists(path):
+                os.remove(path)
+            os.makedirs(path)
         log.info("move %s to %s", filename, path)
+
+        classes_txt = os.path.join(os.path.dirname(filename), "classes.txt")
+        if os.path.exists(classes_txt):
+            shutil.copy(classes_txt, path)
+
         for f in glob.glob(filename.split(".")[0] + ".*"):
             shutil.move(f, path)
 
