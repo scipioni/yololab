@@ -80,10 +80,12 @@ if __name__ == '__main__':
 
     automator = Automator()
     scanning = automator.dirscan(automator.sdir, automator.labelext, automator.imgext)
-    processing_args = [for i in list(automator.toConvert(automator.labdir, automator.imgdir, automator.labsample))]
-    print(f'Processing args are {processing_args}')
+    img, lbl, sample = automator.toConvert(automator.labdir, automator.imgdir, automator.labsample)
+    conversion = automator.autoConvert(img, lbl, sample)
+    # processing_args = [for i in list(automator.toConvert(automator.labdir, automator.imgdir, automator.labsample))]
+    # print(f'Processing args are {processing_args}')
 
 
-    with multiprocessing.Pool(os.cpu_count()) as pool:
-        pool.starmap(automator.autoConvert, processing_args)
-    pool.close()
+    # with multiprocessing.Pool(os.cpu_count()) as pool:
+    #     pool.starmap(automator.autoConvert, processing_args)
+    # pool.close()

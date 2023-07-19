@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 toml=$1
 force=$3
