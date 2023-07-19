@@ -20,32 +20,30 @@ async def grab(config, grabber: Grabber, model: models.Model) -> None:
             frame, filename, bboxes_truth = await grabber.get()
         except Exception as e:
             log.error(e)
-            raise
             break
 
         if frame is None:
             break
 
-        if config.filter_classes_strict:
-            for classId in config.filter_classes_strict:
-                if bboxes_truth.hasOnly(classId):
-                    if config.move:
-                        grabber.move(filename, config.move)
+        if config.move:
+            if config.filter_classes_strict:
+                if bboxes_truth.hasOnly(config.filter_classes_strict):
+                    grabber.move(filename, config.move)
+            elif config.filter_classes:
+                if bboxes_truth.has(config.filter_classes):
+                    grabber.move(filename, config.move)
+
+
         model.predict(frame)
 
         bboxes_predicted = model.getBBoxes()
 
-        if config.filter_classes:
-            if config.merge and config.save:
-                merged_bboxes = bboxes_predicted.merge(bboxes_truth, config.filter_classes)
+        if config.save:
+            if config.merge:
+                merged_bboxes = bboxes_truth.merge(bboxes_predicted, config.filter_classes)
                 merged_bboxes.save(frame, filename, config.save)
             else:
-                matched = False
-                for classId in config.filter_classes:
-                    if bboxes_predicted.has(classId):
-                        matched = True
-
-                if matched and config.save:
+                if bboxes_predicted.has(config.filter_classes):
                     bboxes_predicted.save(
                         frame, filename, config.save, include=config.filter_classes
                     )

@@ -1,6 +1,9 @@
 
 import cv2 as cv
 import logging
+
+from yolorun.grabber import BBoxes
+
 log = logging.getLogger(__name__)
 
 class Model:
@@ -27,6 +30,9 @@ class Model:
             dim = (int(w * scale), int(h * scale))
             frame = cv.resize(frame, dim, interpolation=cv.INTER_AREA)
         cv.imshow(self.config.model, frame)
+
+    def getBBoxes(self):
+        return BBoxes(truth=False)
 
 
 class ModelDummy(Model):
