@@ -27,6 +27,7 @@ class Automator:
                 if (
                     os.path.splitext(f.name)[-1].lower() in self.labelext
                     and Path(f.path).parent not in self.labdir
+                    and os.path.basename(f) != "classes.txt"
                 ):
                     sample = Path(f.path)
                     labfolder = sample.parent
@@ -57,8 +58,9 @@ class Automator:
                 if img.parent == lbl.parent:
                     for sample in self.labsample:
                         if sample.parent == lbl:
-                            dataset = img, lbl, sample
-                            convertible.append(dataset)
+                            datadirs = lbl, img, sample
+                            convertible.append(datadirs)
+                            print(f'Datadirs are {datadirs}')
         return convertible
 
     def autoConvert(self, lbl, img, sample):
@@ -67,6 +69,11 @@ class Automator:
             lbl, img, args.labelformat, importer.dataset
         )
         exported = converter.toSelected()
+
+        initClassesTxt = lconvert.cocoClasses(img)
+
+
+        
 
 
 if __name__ == '__main__':
@@ -84,6 +91,8 @@ if __name__ == '__main__':
     automator = Automator()
     scanning = automator.dirscan(automator.sdir, automator.labelext, automator.imgext)
     processing_args = automator.toConvert(automator.labdir, automator.imgdir, automator.labsample)
+
+    print(f'Processing Args are === {processing_args}')
 
     with multiprocessing.Pool(os.cpu_count()) as pool:
         pool.starmap(automator.autoConvert, processing_args)

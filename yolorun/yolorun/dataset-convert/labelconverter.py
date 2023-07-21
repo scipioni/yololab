@@ -69,7 +69,7 @@ class Conversion:
 
     def toSelected(self):
         if self.output_format == "voc":
-            print(f'Processing: {self.labdir.parent}')
+            print(f"Processing: {self.labdir.parent}")
             self.dataset.export.ExportToVoc(
                 output_path=self.labdir,
                 segmented_=False,
@@ -80,11 +80,11 @@ class Conversion:
             )
 
         if self.output_format == "coco":
-            print(f'Processing: {self.labdir.parent}')
+            print(f"Processing: {self.labdir.parent}")
             self.dataset.export.ExportToCoco(cat_id_index=-1)
 
         if self.output_format == "yolo":
-            print(f'Processing: {self.labdir.parent}')
+            print(f"Processing: {self.labdir.parent}")
             self.dataset.export.ExportToYoloV5(
                 output_path=self.imgdir,
                 yaml_file="dataset.yaml",
@@ -93,3 +93,100 @@ class Conversion:
                 cat_id_index=None,
                 segmentation=False,
             )
+
+
+class cocoClasses:
+    def __init__(self, imgdir):
+        self.imgdir = imgdir
+        self.classesCoco = [
+            "person",
+            "bicycle",
+            "car",
+            "motorcycle",
+            "airplane",
+            "bus",
+            "train",
+            "truck",
+            "boat",
+            "traffic light",
+            "fire hydrant",
+            "stop sign",
+            "parking meter",
+            "bench",
+            "bird",
+            "cat",
+            "dog",
+            "horse",
+            "sheep",
+            "cow",
+            "elephant",
+            "bear",
+            "zebra",
+            "giraffe",
+            "backpack",
+            "umbrella",
+            "handbag",
+            "tie",
+            "suitcase",
+            "frisbee",
+            "skis",
+            "snowboard",
+            "sports ball",
+            "kite",
+            "baseball bat",
+            "baseball glove",
+            "skateboard",
+            "surfboard",
+            "tennis racket",
+            "bottle",
+            "wine glass",
+            "cup",
+            "fork",
+            "knife",
+            "spoon",
+            "bowl",
+            "banana",
+            "apple",
+            "sandwich",
+            "orange",
+            "broccoli",
+            "carrot",
+            "hot dog",
+            "pizza",
+            "donut",
+            "cake",
+            "chair",
+            "couch",
+            "potted plant",
+            "bed",
+            "dining table",
+            "toilet",
+            "tv",
+            "laptop",
+            "mouse",
+            "remote",
+            "keyboard",
+            "cell phone",
+            "microwave",
+            "oven",
+            "toaster",
+            "sink",
+            "refrigerator",
+            "book",
+            "clock",
+            "vase",
+            "scissors",
+            "teddy bear",
+            "hair drier",
+            "toothbrush",
+            "up",
+            "down",
+        ]
+        self.cocoClasses = self.classesTxt()
+
+    def classesTxt(self):
+        toWrite = [string + '\n' for string in self.classesCoco]
+
+        classes_txt = os.path.join(self.imgdir, "classes.txt")
+        with open(classes_txt, "w") as f:
+            f.writelines(toWrite)
