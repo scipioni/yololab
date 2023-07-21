@@ -99,7 +99,7 @@ class BBox:
             color = (255, 0, 0)
         else:
             color = (255, 255, 255)
-            if cls > 0:
+            if cls == 81:
                 color = (0, 0, 255)
 
         confidence = round(self.confidence * 100)
