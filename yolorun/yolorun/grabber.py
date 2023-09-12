@@ -388,7 +388,7 @@ class FileGrabber(Grabber):
             if filename[0] != "/":
                 files[index] = filename  # os.path.join(self.config.path, filename)
 
-        if files and (".mp4" in files[0] or ".mkv" in files[0] or ".mov" in files[0]):
+        if files and (".mp4" in files[0] or ".mkv" in files[0] or ".mov" in files[0] or ".webm" in files[0]):
             self.video = files[0]
             log.info("video detected: %s" % self.video)
         else:

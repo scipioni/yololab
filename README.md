@@ -73,7 +73,39 @@ yolo-folder
   classes.txt
 ```
 
+## train segmentation
+
+```
+cd /lab/yololab-github
+yolo detect train name=plates model=models/yolov8n-seg.pt data=/archive/dataset/plates-seg/plates.yaml epochs=100 imgsz=640 pretrained=true exist_ok=true batch=-1
+```
+
 ## dataset
+
+### plates
+
+plates.yaml
+```
+path: ./plates-seg/  # relative to datasets_dir in ~/.config/Ultralytics/settings.yaml
+train: train.txt  # train images (relative to 'path')
+val: val.txt  # val images (relative to 'path')
+test:  # test images (optional)
+
+names:
+  0: plate
+```
+
+train.txt
+```
+/archive/dataset/plates-seg/plates-01/1603394277541.jpg
+...
+```
+
+val.txt
+```
+/archive/dataset/plates-seg/plates-01/1603394291109.jpg
+```
+
 
 ### pothole
 

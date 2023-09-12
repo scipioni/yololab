@@ -28,9 +28,10 @@ tasks:
         source .venv/bin/activate
         pip install --upgrade pip pdm
         pip install -e opencv-python
-        pip install -e yololab
-        cd yololab 
-        pdm install -G train
+        pip install -U ultralytics
+        pip install -e yolorun
+        #cd yololab 
+        #pdm install -G train
         yolo settings
       # - .venv/bin/pip install nvidia-pyindex
       # - .venv/bin/pip install pytorch-quantization black
@@ -113,6 +114,10 @@ tasks:
     cmds:
       - pip install -e yololab
 
+  train:seg:
+    cmds:
+      - |
+        yolo detect train name=plates model=models/yolov8n-seg.pt data=/archive/dataset/plates-seg/plates.yaml epochs=100 imgsz=640 pretrained=true exist_ok=true batch=-1
 
   train:
     cmds:
